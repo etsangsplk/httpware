@@ -8,6 +8,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+func AdaptHandler(h httpcontext.Handler) httprouter.Handle {
+	return Adapt(h.ServeHTTPContext)
+}
+
 func Adapt(hf httpcontext.HandlerFunc) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ctx := context.Background()
