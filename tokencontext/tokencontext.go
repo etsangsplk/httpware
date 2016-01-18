@@ -8,8 +8,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-func TokenFromContext(ctx context.Context) jwt.Token {
-	return ctx.Value(httpcontext.TokenKey).(jwt.Token)
+func TokenFromContext(ctx context.Context) *jwt.Token {
+	return ctx.Value(httpcontext.TokenKey).(*jwt.Token)
 }
 
 func Auth(next httpcontext.Handler, secret interface{}) httpcontext.Handler {
