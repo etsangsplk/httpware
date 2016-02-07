@@ -16,8 +16,8 @@ func(context.Context, http.ResponseWriter, *http.Request) error
 | routerctx  | Adapting [httprouter](https://github.com/julienschmidt/httprouter) parameters to the above form |
 | tokenctx   | JWT authentication |
 
-##### Reasonable Middleware Compositions
-There are also a set of functions where the middleware has already been composed into reasonable combinations.
+##### Reasonable Middleware Compositions (simplectx)
+The simplectx package includes a set of functions where the middleware has already been composed into reasonable combinations.
 For example, using [httprouter](https://github.com/julienschmidt/httprouter):
 ```Go
 type User struct {
