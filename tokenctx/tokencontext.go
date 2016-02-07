@@ -5,6 +5,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/nstogner/netmiddle/httpctx"
+	"github.com/nstogner/netmiddle/httperr"
 	"golang.org/x/net/context"
 )
 
@@ -25,8 +26,10 @@ func Auth(next httpctx.Handler, secret interface{}) httpctx.Handler {
 			newCtx := context.WithValue(ctx, httpctx.TokenKey, token)
 			return next.ServeHTTPContext(newCtx, w, r)
 		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-			return nil
+			return httperr.Err{
+				StatusCode: http.StatusUnauthorized,
+				Message:    "invalid token",
+			}
 		}
 	})
 }

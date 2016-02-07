@@ -5,7 +5,7 @@ package main
 //   curl localhost:8080 -v -H "Content-Type: application/json" -d '{"id": "bdog", "name": "bob"}'
 //   curl localhost:8080 -v -H "Content-Type: application/xml"  -d '<user><id>bdog</id><name>bob</name></user>'
 //   curl localhost:8080 -v -H "Content-Type: application/xml" -H "Accept: application/xml" -d '<user><id>bdog</id><name>bob</name></user>'
-//   curl localhost:8080/sman -v
+//   curl localhost:8080/sam -v
 
 import (
 	"net/http"
@@ -31,19 +31,16 @@ func main() {
 		port = "8080"
 	}
 
-	contentTypes := []*contentctx.ContentType{
-		contentctx.ContentTypeJson,
-		contentctx.ContentTypeXml,
-	}
-
 	r := httprouter.New()
 
 	r.GET("/:id", routerctx.Adapt(
-		contentctx.Negotiate(
-			httpctx.HandlerFunc(handleGet), contentTypes, contentTypes)))
+		contentctx.Response(
+			httpctx.HandlerFunc(handleGet), contentctx.JsonAndXml)))
 	r.POST("/", routerctx.Adapt(
-		contentctx.Negotiate(
-			contentctx.Unmarshal(httpctx.HandlerFunc(handlePost), user{}, 10000, nil), contentTypes, contentTypes)))
+		contentctx.Request(
+			contentctx.Response(
+				contentctx.Unmarshal(httpctx.HandlerFunc(handlePost), user{}, 10000, nil), contentctx.JsonAndXml),
+			contentctx.JsonAndXml)))
 
 	logrus.WithField("port", port).Info("starting server...")
 	logrus.Fatal(http.ListenAndServe(":"+port, r))
@@ -55,7 +52,7 @@ func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) err
 
 	w.WriteHeader(http.StatusCreated)
 	rct := contentctx.RespContentTypeFromContext(ctx)
-	rct.Marshal(w, u)
+	rct.MarshalWrite(w, u)
 	return nil
 }
 
@@ -66,6 +63,6 @@ func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) erro
 	u := &user{Id: usrId, Name: "sammy"}
 
 	ct := contentctx.RespContentTypeFromContext(ctx)
-	ct.Marshal(w, u)
+	ct.MarshalWrite(w, u)
 	return nil
 }

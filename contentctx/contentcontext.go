@@ -10,41 +10,46 @@ import (
 	"strings"
 
 	"github.com/nstogner/netmiddle/httpctx"
+	"github.com/nstogner/netmiddle/httperr"
 
 	"golang.org/x/net/context"
 )
 
 const (
-	TypeJson = 0
-	TypeXml  = 1
+	KeyJson = 0
+	KeyXml  = 1
 )
 
 var (
-	ContentTypeJson = &ContentType{
-		SearchText: "json",
-		Value:      "application/json",
-		Key:        TypeJson,
-		Unmarshal:  json.Unmarshal,
-		Marshal:    MarshalFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
+	Json = &ContentType{
+		SearchText:   "json",
+		Value:        "application/json",
+		Key:          KeyJson,
+		Unmarshal:    json.Unmarshal,
+		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
 	}
-	ContentTypeXml = &ContentType{
-		SearchText: "xml",
-		Value:      "application/xml",
-		Key:        TypeXml,
-		Unmarshal:  xml.Unmarshal,
-		Marshal:    MarshalFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
+	Xml = &ContentType{
+		SearchText:   "xml",
+		Value:        "application/xml",
+		Key:          KeyXml,
+		Unmarshal:    xml.Unmarshal,
+		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
+	}
+	JsonAndXml = []*ContentType{
+		Json,
+		Xml,
 	}
 )
 
 type UnmarshalFunc func([]byte, interface{}) error
-type MarshalFunc func(io.Writer, interface{}) error
+type MarshalWriteFunc func(io.Writer, interface{}) error
 
 type ContentType struct {
-	SearchText string
-	Value      string
-	Key        int32
-	Unmarshal  UnmarshalFunc
-	Marshal    MarshalFunc
+	SearchText   string
+	Value        string
+	Key          int32
+	Unmarshal    UnmarshalFunc
+	MarshalWrite MarshalWriteFunc
 }
 
 func EntityFromContext(ctx context.Context) interface{} {
@@ -67,23 +72,34 @@ func RespContentTypeFromContext(ctx context.Context) *ContentType {
 	return ct.(*ContentType)
 }
 
-func Negotiate(next httpctx.Handler, requestTypes []*ContentType, responseTypes []*ContentType) httpctx.Handler {
-	if len(responseTypes) == 0 {
-		panic("preference slice must not be empty")
+func Request(next httpctx.Handler, types []*ContentType) httpctx.Handler {
+	if len(types) == 0 {
+		panic("content types slice must not be empty")
 	}
 
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		resContType := getContentMatch(r.Header.Get("accept"), requestTypes)
-		reqContType := getContentMatch(r.Header.Get("Content-Type"), responseTypes)
+		reqContType := GetContentMatch(r.Header.Get("Content-Type"), types)
 
-		w.Header().Set("Content-Type", resContType.Value)
-		newCtx := context.WithValue(ctx, httpctx.ResponseContentTypeKey, resContType)
-		newerCtx := context.WithValue(newCtx, httpctx.RequestContentTypeKey, reqContType)
-		return next.ServeHTTPContext(newerCtx, w, r)
+		newCtx := context.WithValue(ctx, httpctx.RequestContentTypeKey, reqContType)
+		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
-func getContentMatch(header string, cts []*ContentType) *ContentType {
+func Response(next httpctx.Handler, types []*ContentType) httpctx.Handler {
+	if len(types) == 0 {
+		panic("content types slice must not be empty")
+	}
+
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		resContType := GetContentMatch(r.Header.Get("accept"), types)
+
+		w.Header().Set("Content-Type", resContType.Value)
+		newCtx := context.WithValue(ctx, httpctx.ResponseContentTypeKey, resContType)
+		return next.ServeHTTPContext(newCtx, w, r)
+	})
+}
+
+func GetContentMatch(header string, cts []*ContentType) *ContentType {
 	for _, c := range cts {
 		if strings.Contains(header, c.SearchText) {
 			return c
@@ -97,7 +113,7 @@ func Unmarshal(next httpctx.Handler, v interface{}, maxBytesSize int64, unmarsha
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, maxBytesSize))
 		if err != nil {
-			return httpctx.Err{
+			return httperr.Err{
 				StatusCode: http.StatusRequestEntityTooLarge,
 				Message:    "request size exceeded limit: " + err.Error(),
 				Fields: map[string]interface{}{
@@ -116,7 +132,7 @@ func Unmarshal(next httpctx.Handler, v interface{}, maxBytesSize int64, unmarsha
 			uf = ct.Unmarshal
 		}
 		if err := uf(body, entity); err != nil {
-			return httpctx.Err{
+			return httperr.Err{
 				StatusCode: http.StatusBadRequest,
 				Message:    "unable to parse body: " + err.Error(),
 			}

@@ -3,8 +3,6 @@ package contentctx
 import (
 	"bytes"
 	"encoding/json"
-	"encoding/xml"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +17,7 @@ type user struct {
 	Name string `json:"name"`
 }
 
-func TestMarshal(t *testing.T) {
+func TestUnmarshal(t *testing.T) {
 	u := user{}
 
 	s := httptest.NewServer(
@@ -44,68 +42,94 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
-func TestNegotiate(t *testing.T) {
-	u := user{
-		Id:   456,
-		Name: "XYZ",
-	}
-
-	js := httptest.NewServer(
+func TestRequest(t *testing.T) {
+	s := httptest.NewServer(
 		httpctx.Adapt(
-			Negotiate(
+			Request(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-					reqContentType := ReqContentTypeFromContext(ctx)
-					reqContentType.Marshal(w, u)
+					ct := ReqContentTypeFromContext(ctx)
+					switch r.URL.Path {
+					case "/test-json":
+						if ct.Key != KeyJson {
+							t.Fatal("expected json type")
+						}
+						return nil
+					case "/test-xml":
+						if ct.Key != KeyXml {
+							t.Fatal("expected xml type")
+						}
+						return nil
+					}
+					t.Fatal("this point should never have been reached")
 					return nil
 				}),
-				[]*ContentType{ContentTypeJson, ContentTypeXml}, []*ContentType{ContentTypeJson, ContentTypeXml})))
+				JsonAndXml)))
 
 	c := http.Client{}
 
-	req, err := http.NewRequest("GET", js.URL+"/test-json", nil)
+	req, err := http.NewRequest("GET", s.URL+"/test-json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	req.Header.Set("accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-	resp, err := c.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.Header.Get("Content-Type") != ContentTypeJson.Value {
-		t.Fatal("expected content-type: " + ContentTypeJson.Value)
-	}
-	body, _ := ioutil.ReadAll(resp.Body)
-	if err := json.Unmarshal(body, &u); err != nil {
-		t.Fatal(err)
-	}
-
-	req.Header.Set("accept", "")
-	resp, err = c.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.Header.Get("Content-Type") != ContentTypeJson.Value {
-		t.Fatal("expected content-type: " + ContentTypeJson.Value)
-	}
-
-	req, err = http.NewRequest("GET", js.URL+"/test-xml", nil)
+	_, err = c.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	req.Header.Set("accept", "applicaiton/xml")
+	req, err = http.NewRequest("GET", s.URL+"/test-xml", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	req.Header.Set("Content-Type", "application/xml")
-	resp, err = c.Do(req)
+	_, err = c.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.Header.Get("Content-Type") != ContentTypeXml.Value {
-		t.Fatal("expected content-type: " + ContentTypeXml.Value)
+}
+
+func TestResponse(t *testing.T) {
+	s := httptest.NewServer(
+		httpctx.Adapt(
+			Response(
+				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+					ct := RespContentTypeFromContext(ctx)
+					switch r.URL.Path {
+					case "/test-json":
+						if ct.Key != KeyJson {
+							t.Fatal("expected json type")
+						}
+						return nil
+					case "/test-xml":
+						if ct.Key != KeyXml {
+							t.Fatal("expected xml type")
+						}
+						return nil
+					}
+					t.Fatal("this point should never have been reached")
+					return nil
+				}),
+				JsonAndXml)))
+
+	c := http.Client{}
+
+	req, err := http.NewRequest("GET", s.URL+"/test-json", nil)
+	if err != nil {
+		t.Fatal(err)
 	}
-	body, _ = ioutil.ReadAll(resp.Body)
-	if err := xml.Unmarshal(body, &u); err != nil {
+	req.Header.Set("Accept", "application/json")
+	_, err = c.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err = http.NewRequest("GET", s.URL+"/test-xml", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Accept", "application/xml")
+	_, err = c.Do(req)
+	if err != nil {
 		t.Fatal(err)
 	}
 }
