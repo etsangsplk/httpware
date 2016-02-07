@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func Handle(next httpctx.Handler, secret interface{}) httpctx.Handler {
+func Handle(next httpctx.Handler) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		err := next.ServeHTTPContext(ctx, w, r)
 		if err == nil {

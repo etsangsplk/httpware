@@ -25,16 +25,17 @@ func (h HandlerFunc) ServeHTTPContext(ctx context.Context, w http.ResponseWriter
 	return h(ctx, w, r)
 }
 
+// Adapter is used to call a httpctx.Handler where a http.handler is expected.
+type Adapter struct {
+	ctx     context.Context
+	handler Handler
+}
+
 func Adapt(h Handler) Adapter {
 	return Adapter{
 		ctx:     context.Background(),
 		handler: h,
 	}
-}
-
-type Adapter struct {
-	ctx     context.Context
-	handler Handler
 }
 
 func (ca Adapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
