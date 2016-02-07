@@ -1,10 +1,10 @@
 package routerctx
 
 import (
-	"bluesky/httpctx"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/nstogner/netmiddle/httpctx"
 	"golang.org/x/net/context"
 )
 

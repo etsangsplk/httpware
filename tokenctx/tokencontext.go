@@ -1,10 +1,10 @@
 package tokenctx
 
 import (
-	"bluesky/httpctx"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/nstogner/netmiddle/httpctx"
 	"golang.org/x/net/context"
 )
 

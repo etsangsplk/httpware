@@ -1,7 +1,6 @@
-package jsonctx
+package contentctx
 
 import (
-	"bluesky/httpctx"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -9,6 +8,8 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/nstogner/netmiddle/httpctx"
 
 	"golang.org/x/net/context"
 )

@@ -1,15 +1,15 @@
-package jsonctx
+package contentctx
 
 import (
-	"bluesky/httpctx"
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/nstogner/netmiddle/httpctx"
 
 	"golang.org/x/net/context"
 )
@@ -38,12 +38,10 @@ func TestMarshal(t *testing.T) {
 				u, 100000, json.Unmarshal)))
 
 	b := bytes.NewReader([]byte(`{"id": 123, "name": "abc"}`))
-	resp, err := http.Post(s.URL, "application/json", b)
+	_, err := http.Post(s.URL, "application/json", b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(r))
 }
 
 func TestNegotiate(t *testing.T) {
