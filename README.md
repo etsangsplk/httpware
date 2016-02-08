@@ -36,24 +36,24 @@ func main() {
 The use of such middleware allows for less cluttered handler functions:
 ```Go
 func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-    ps := routerctx.ParamsFromContext(ctx)
+    ps := routerctx.ParamsFromCtx(ctx)
 
     usrId := ps.ByName("id")
     // Usually this would be a db call...
     u := &User{Id: usrId, Name: "sammy"}
 
-    ct := contentctx.RespContentTypeFromContext(ctx)
+    ct := contentctx.RespContentTypeFromCtx(ctx)
     ct.MarshalWrite(w, u)
     return nil
 }
 
 func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-    u := contentctx.EntityFromContext(ctx).(*User)
+    u := contentctx.EntityFromCtx(ctx).(*User)
 
     // Store u in a database here.
     
     w.WriteHeader(http.StatusCreated)
-    rct := contentctx.RespContentTypeFromContext(ctx)
+    rct := contentctx.RespContentTypeFromCtx(ctx)
     rct.MarshalWrite(w, u)
     return nil
 }

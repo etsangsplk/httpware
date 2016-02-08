@@ -24,7 +24,7 @@ func TestUnmarshal(t *testing.T) {
 		httpctx.Adapt(
 			Unmarshal(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-					u := EntityFromContext(ctx).(*user)
+					u := EntityFromCtx(ctx).(*user)
 					if u.Id != 123 {
 						t.Fatal("expected user id to equal 123")
 					}
@@ -47,7 +47,7 @@ func TestRequest(t *testing.T) {
 		httpctx.Adapt(
 			Request(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-					ct := ReqContentTypeFromContext(ctx)
+					ct := RequestTypeFromCtx(ctx)
 					switch r.URL.Path {
 					case "/test-json":
 						if ct.Key != KeyJson {
@@ -93,7 +93,7 @@ func TestResponse(t *testing.T) {
 		httpctx.Adapt(
 			Response(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-					ct := RespContentTypeFromContext(ctx)
+					ct := ResponseTypeFromCtx(ctx)
 					switch r.URL.Path {
 					case "/test-json":
 						if ct.Key != KeyJson {

@@ -20,6 +20,6 @@ func AdaptFunc(hf httpctx.HandlerFunc) httprouter.Handle {
 	}
 }
 
-func ParamsFromContext(ctx context.Context) httprouter.Params {
+func ParamsFromCtx(ctx context.Context) httprouter.Params {
 	return ctx.Value(httpctx.ParamsKey).(httprouter.Params)
 }

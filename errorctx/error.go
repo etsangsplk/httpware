@@ -20,7 +20,7 @@ func Handle(next httpctx.Handler) httpctx.Handler {
 			w.Header().Set("X-Content-Type-Options", "nosniff")
 			w.WriteHeader(httpErr.StatusCode)
 
-			rct := contentctx.RespContentTypeFromContext(ctx)
+			rct := contentctx.ResponseTypeFromCtx(ctx)
 			// If the response content type has not already been parsed by upstream middleware
 			// then it must be parsed now.
 			if rct == nil {

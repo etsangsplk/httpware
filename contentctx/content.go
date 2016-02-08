@@ -52,11 +52,11 @@ type ContentType struct {
 	MarshalWrite MarshalWriteFunc
 }
 
-func EntityFromContext(ctx context.Context) interface{} {
+func EntityFromCtx(ctx context.Context) interface{} {
 	return ctx.Value(httpctx.JsonEntityKey)
 }
 
-func ReqContentTypeFromContext(ctx context.Context) *ContentType {
+func RequestTypeFromCtx(ctx context.Context) *ContentType {
 	ct := ctx.Value(httpctx.RequestContentTypeKey)
 	if ct == nil {
 		return nil
@@ -64,7 +64,7 @@ func ReqContentTypeFromContext(ctx context.Context) *ContentType {
 	return ct.(*ContentType)
 }
 
-func RespContentTypeFromContext(ctx context.Context) *ContentType {
+func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 	ct := ctx.Value(httpctx.ResponseContentTypeKey)
 	if ct == nil {
 		return nil
@@ -124,7 +124,7 @@ func Unmarshal(next httpctx.Handler, v interface{}, maxBytesSize int64, unmarsha
 
 		entity := reflect.New(t).Interface()
 
-		ct := ReqContentTypeFromContext(ctx)
+		ct := RequestTypeFromCtx(ctx)
 		var uf UnmarshalFunc
 		if unmarshaller != nil {
 			uf = unmarshaller

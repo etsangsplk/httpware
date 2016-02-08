@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func TokenFromContext(ctx context.Context) *jwt.Token {
+func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(httpctx.TokenKey).(*jwt.Token)
 }
 
