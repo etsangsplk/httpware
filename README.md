@@ -42,7 +42,7 @@ func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) erro
     // Usually this would be a db call...
     u := &User{Id: usrId, Name: "sammy"}
 
-    ct := contentctx.RespContentTypeFromCtx(ctx)
+    ct := contentctx.ResponseTypeFromCtx(ctx)
     ct.MarshalWrite(w, u)
     return nil
 }
@@ -53,7 +53,7 @@ func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) err
     // Store u in a database here.
     
     w.WriteHeader(http.StatusCreated)
-    rct := contentctx.RespContentTypeFromCtx(ctx)
+    rct := contentctx.ResponseTypeFromCtx(ctx)
     rct.MarshalWrite(w, u)
     return nil
 }
