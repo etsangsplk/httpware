@@ -1,6 +1,7 @@
 # contextware
 
 #### Golang HTTP middleware using net/context
+**NOTE: CURRENTLY UNDER HEAVY DEVELOPMENT**
 
 This repository is a collection of middleware packages which aid in writing http handlers in Go. All middleware is of the form:
 ```Go
