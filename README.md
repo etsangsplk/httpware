@@ -17,6 +17,7 @@ func(context.Context, http.ResponseWriter, *http.Request)
 | Compatibility with [httprouter](https://github.com/julienschmidt/httprouter) | routerctx |
 | JWT authentication | tokenctx |
 | Logging | logctx |
+| [BoltDB](https://github.com/boltdb/bolt) persistence | boltctx |
 | Reasonable compositions of the above middleware | easyctx |
 
 #### Using the Reasonable Middleware Compositions (easyctx)
