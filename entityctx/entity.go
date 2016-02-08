@@ -17,13 +17,11 @@ type Definition struct {
 	Entity      interface{}
 	Validate    Validator
 	MaxByteSize int64
-	Identify    Identifier
 
 	reflectedType reflect.Type
 }
 
 type Validator func(interface{}) error
-type Identifier func(interface{}) []byte
 
 func (d *Definition) inspect() {
 	d.reflectedType = reflect.TypeOf(d.Entity)
