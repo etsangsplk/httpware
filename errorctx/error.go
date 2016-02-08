@@ -14,6 +14,10 @@ func Handle(next httpctx.Handler) httpctx.Handler {
 		defer func() {
 			err := recover()
 
+			if err == nil {
+				return
+			}
+
 			if httpErr, ok := err.(httperr.Err); ok {
 				w.Header().Set("X-Content-Type-Options", "nosniff")
 				w.WriteHeader(httpErr.StatusCode)
@@ -26,10 +30,10 @@ func Handle(next httpctx.Handler) httpctx.Handler {
 				}
 
 				rct.MarshalWrite(w, httpErr)
-				return
+			} else {
+				// If a regular error was returned, resort to internal server error.
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			}
-			// If a regular error was returned, resort to internal server error.
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}()
 
 		next.ServeHTTPContext(ctx, w, r)
