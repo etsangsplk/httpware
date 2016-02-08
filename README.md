@@ -16,6 +16,7 @@ func(context.Context, http.ResponseWriter, *http.Request)
 | Handling errors | errorctx |
 | Compatibility with [httprouter](https://github.com/julienschmidt/httprouter) | routerctx |
 | JWT authentication | tokenctx |
+| Request/error logging | logctx |
 | Reasonable compositions of the above middleware | easyctx |
 
 #### Using the Reasonable Middleware Compositions (easyctx)
