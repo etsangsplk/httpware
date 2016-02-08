@@ -12,11 +12,11 @@ func(context.Context, http.ResponseWriter, *http.Request)
 | Functionality | Package |
 |:--------------|:--------:|
 | Parsing Request & Response Content Types | contentctx |
-| Marshalling/Unmarshalling responses (JSON & XML) | contentctx |
+| Unmarshalling (json/xml) and validating entities | entityctx |
 | Handling errors | errorctx |
 | Compatibility with [httprouter](https://github.com/julienschmidt/httprouter) | routerctx |
 | JWT authentication | tokenctx |
-| Request/error logging | logctx |
+| Logging | logctx |
 | Reasonable compositions of the above middleware | easyctx |
 
 #### Using the Reasonable Middleware Compositions (easyctx)
@@ -28,9 +28,21 @@ type User struct {
 }
 
 func main() {
+
+    userDef := &entityctx.Definition{
+        Entity: User{},
+        Validate: func(u interface{}) error {
+            usr := u.(*User)
+            if len(usr.Id) < 5 {
+                return errors.New("user id must be at least 5 characters")
+            }
+            return nil
+        },
+    }
+
     r := httprouter.New()
     r.GET("/:id", easyctx.Get(handleGet))
-    r.POST("/", easyctx.Post(handlePost, User{}))
+    r.POST("/", easyctx.Post(handlePost, userDef))
     http.ListenAndServe(":8080", r)
 }
 ```
