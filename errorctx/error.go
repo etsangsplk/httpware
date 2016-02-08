@@ -3,9 +3,9 @@ package errorctx
 import (
 	"net/http"
 
-	"github.com/nstogner/netmiddle/contentctx"
-	"github.com/nstogner/netmiddle/httpctx"
-	"github.com/nstogner/netmiddle/httperr"
+	"github.com/nstogner/contextware/contentctx"
+	"github.com/nstogner/contextware/httpctx"
+	"github.com/nstogner/contextware/httperr"
 	"golang.org/x/net/context"
 )
 

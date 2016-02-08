@@ -13,9 +13,9 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/netmiddle/contentctx"
-	"github.com/nstogner/netmiddle/routerctx"
-	"github.com/nstogner/netmiddle/simplectx"
+	"github.com/nstogner/contextware/contentctx"
+	"github.com/nstogner/contextware/easyctx"
+	"github.com/nstogner/contextware/routerctx"
 
 	"golang.org/x/net/context"
 )
@@ -33,8 +33,8 @@ func main() {
 
 	r := httprouter.New()
 
-	r.GET("/:id", simplectx.Get(handleGet))
-	r.POST("/", simplectx.Post(handlePost, user{}))
+	r.GET("/:id", easyctx.Get(handleGet))
+	r.POST("/", easyctx.Post(handlePost, user{}))
 
 	logrus.WithField("port", port).Info("starting server...")
 	logrus.Fatal(http.ListenAndServe(":"+port, r))

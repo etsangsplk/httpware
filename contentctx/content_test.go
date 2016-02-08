@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/netmiddle/httpctx"
+	"github.com/nstogner/contextware/httpctx"
 
 	"golang.org/x/net/context"
 )

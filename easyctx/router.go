@@ -1,11 +1,11 @@
-package simplectx
+package easyctx
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/netmiddle/contentctx"
-	"github.com/nstogner/netmiddle/errorctx"
-	"github.com/nstogner/netmiddle/httpctx"
-	"github.com/nstogner/netmiddle/routerctx"
+	"github.com/nstogner/contextware/contentctx"
+	"github.com/nstogner/contextware/errorctx"
+	"github.com/nstogner/contextware/httpctx"
+	"github.com/nstogner/contextware/routerctx"
 )
 
 var MaxBytesSize = int64(1000000)

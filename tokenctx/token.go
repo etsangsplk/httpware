@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/nstogner/netmiddle/httpctx"
-	"github.com/nstogner/netmiddle/httperr"
+	"github.com/nstogner/contextware/httpctx"
+	"github.com/nstogner/contextware/httperr"
 	"golang.org/x/net/context"
 )
 

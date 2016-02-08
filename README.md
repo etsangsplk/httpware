@@ -1,24 +1,24 @@
-# netmiddle
-##### Golang HTTP middleware using net context
+# contextware
 
-This repository uses middleware of the form:
+#### Golang HTTP middleware using net/context
+
+This repository is a collection of middleware packages which aid in writing http handlers in Go. All middleware is of the form:
 ```Go
 func(context.Context, http.ResponseWriter, *http.Request) error
 ```
 
-##### Middleware Functionality
-|  Package   | Functionality |
-|:----------:|:-------------:|
-| contentctx | Parsing Request Content-Type |
-| contentctx | Setting Response Content-Type from Accept header |
-| contentctx | Marshalling/Unmarshalling responses (JSON & XML) |
-| errorctx   | Handling http errors |
-| routerctx  | Adapting [httprouter](https://github.com/julienschmidt/httprouter) parameters to the above form |
-| tokenctx   | JWT authentication |
+#### Package Descriptions
+| Functionality | Package |
+|:--------------|:--------:|
+| Parsing Request & Response Content Types | contentctx |
+| Marshalling/Unmarshalling responses (JSON & XML) | contentctx |
+| Handling errors | errorctx |
+| Compatibility with [httprouter](https://github.com/julienschmidt/httprouter) | routerctx |
+| JWT authentication | tokenctx |
+| Reasonable compositions of the above middleware | easyctx |
 
-##### Reasonable Middleware Compositions (simplectx)
-The simplectx package includes a set of functions where the middleware has already been composed into reasonable combinations.
-For example, using [httprouter](https://github.com/julienschmidt/httprouter):
+#### Using the Reasonable Middleware Compositions (easyctx)
+The easyctx package includes an opinionated set of functions (middleware compositions) which should cover most use cases. These functions are adapted for use with the [httprouter](https://github.com/julienschmidt/httprouter) package:
 ```Go
 type User struct {
     Id string `json:"id" xml:"id"`
@@ -27,8 +27,8 @@ type User struct {
 
 func main() {
     r := httprouter.New()
-    r.GET("/:id", simplectx.Get(handleGet))
-    r.POST("/", simplectx.Post(handlePost, User{}))
+    r.GET("/:id", easyctx.Get(handleGet))
+    r.POST("/", easyctx.Post(handlePost, User{}))
     http.ListenAndServe(":8080", r)
 }
 ```

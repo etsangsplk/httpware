@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/netmiddle/httpctx"
+	"github.com/nstogner/contextware/httpctx"
 	"golang.org/x/net/context"
 )
 
