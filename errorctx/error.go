@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func Handle(next httpctx.Handler) httpctx.Handler {
+func Handle(next httpctx.Handler, catchAll bool) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
@@ -31,8 +31,13 @@ func Handle(next httpctx.Handler) httpctx.Handler {
 
 				rct.MarshalWrite(w, httpErr)
 			} else {
-				// If a regular error was returned, resort to internal server error.
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				if catchAll {
+					// If a regular error was returned, resort to internal server error.
+					http.Error(w, "internal server error", http.StatusInternalServerError)
+				} else {
+					// Explode.
+					panic(err)
+				}
 			}
 		}()
 

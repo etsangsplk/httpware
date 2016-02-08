@@ -4,13 +4,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"reflect"
 	"strings"
 
 	"github.com/nstogner/contextware/httpctx"
-	"github.com/nstogner/contextware/httperr"
 
 	"golang.org/x/net/context"
 )
@@ -50,10 +47,6 @@ type ContentType struct {
 	Key          int32
 	Unmarshal    UnmarshalFunc
 	MarshalWrite MarshalWriteFunc
-}
-
-func EntityFromCtx(ctx context.Context) interface{} {
-	return ctx.Value(httpctx.JsonEntityKey)
 }
 
 func RequestTypeFromCtx(ctx context.Context) *ContentType {
@@ -106,39 +99,4 @@ func GetContentMatch(header string, cts []*ContentType) *ContentType {
 		}
 	}
 	return cts[0]
-}
-
-func Unmarshal(next httpctx.Handler, v interface{}, maxBytesSize int64, unmarshaller UnmarshalFunc) httpctx.Handler {
-	t := reflect.TypeOf(v)
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, maxBytesSize))
-		if err != nil {
-			httperr.Return(httperr.Err{
-				StatusCode: http.StatusRequestEntityTooLarge,
-				Message:    "request size exceeded limit: " + err.Error(),
-				Fields: map[string]interface{}{
-					"byteLimit": maxBytesSize,
-				},
-			})
-		}
-
-		entity := reflect.New(t).Interface()
-
-		ct := RequestTypeFromCtx(ctx)
-		var uf UnmarshalFunc
-		if unmarshaller != nil {
-			uf = unmarshaller
-		} else {
-			uf = ct.Unmarshal
-		}
-		if err := uf(body, entity); err != nil {
-			httperr.Return(httperr.Err{
-				StatusCode: http.StatusBadRequest,
-				Message:    "unable to parse body: " + err.Error(),
-			})
-		}
-
-		newCtx := context.WithValue(ctx, httpctx.JsonEntityKey, entity)
-		next.ServeHTTPContext(newCtx, w, r)
-	})
 }

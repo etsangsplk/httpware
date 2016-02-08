@@ -1,8 +1,6 @@
 package contentctx
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,30 +13,6 @@ import (
 type user struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
-}
-
-func TestUnmarshal(t *testing.T) {
-	u := user{}
-
-	s := httptest.NewServer(
-		httpctx.Adapt(
-			Unmarshal(
-				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-					u := EntityFromCtx(ctx).(*user)
-					if u.Id != 123 {
-						t.Fatal("expected user id to equal 123")
-					}
-					if u.Name != "abc" {
-						t.Fatal("expected user name to equal 'abc'")
-					}
-				}),
-				u, 100000, json.Unmarshal)))
-
-	b := bytes.NewReader([]byte(`{"id": 123, "name": "abc"}`))
-	_, err := http.Post(s.URL, "application/json", b)
-	if err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestRequest(t *testing.T) {

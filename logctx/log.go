@@ -1,7 +1,7 @@
 package logctx
 
 import (
-	"log"
+	"errors"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
@@ -29,7 +29,6 @@ func Errors(next httpctx.Handler) httpctx.Handler {
 			}
 
 			if httpErr, ok := err.(httperr.Err); ok {
-				log.Println("httperr")
 				logrus.WithFields(logrus.Fields{
 					"method": r.Method,
 					"error":  httpErr,
@@ -37,11 +36,15 @@ func Errors(next httpctx.Handler) httpctx.Handler {
 				// Propogate the http error along.
 				httperr.Return(httpErr)
 			} else {
+				msg, ok := err.(error)
+				if !ok {
+					msg = errors.New("unidentified error")
+				}
 				logrus.WithFields(logrus.Fields{
 					"method": r.Method,
-					"error": httperr.Err{
-						StatusCode: http.StatusInternalServerError,
-						Message:    "internal server error",
+					"error": map[string]interface{}{
+						"statusCode": http.StatusInternalServerError,
+						"message":    msg,
 					},
 				}).Info("request failed")
 				// Propogate the error along.
