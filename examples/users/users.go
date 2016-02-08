@@ -41,16 +41,16 @@ func main() {
 
 }
 
-func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	u := contentctx.EntityFromCtx(ctx).(*user)
 
 	w.WriteHeader(http.StatusCreated)
 	rct := contentctx.ResponseTypeFromCtx(ctx)
 	rct.MarshalWrite(w, u)
-	return nil
+	return
 }
 
-func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	ps := routerctx.ParamsFromCtx(ctx)
 
 	usrId := ps.ByName("id")
@@ -58,5 +58,5 @@ func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) erro
 
 	ct := contentctx.ResponseTypeFromCtx(ctx)
 	ct.MarshalWrite(w, u)
-	return nil
+	return
 }

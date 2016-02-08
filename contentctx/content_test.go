@@ -23,7 +23,7 @@ func TestUnmarshal(t *testing.T) {
 	s := httptest.NewServer(
 		httpctx.Adapt(
 			Unmarshal(
-				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 					u := EntityFromCtx(ctx).(*user)
 					if u.Id != 123 {
 						t.Fatal("expected user id to equal 123")
@@ -31,7 +31,6 @@ func TestUnmarshal(t *testing.T) {
 					if u.Name != "abc" {
 						t.Fatal("expected user name to equal 'abc'")
 					}
-					return nil
 				}),
 				u, 100000, json.Unmarshal)))
 
@@ -46,22 +45,21 @@ func TestRequest(t *testing.T) {
 	s := httptest.NewServer(
 		httpctx.Adapt(
 			Request(
-				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 					ct := RequestTypeFromCtx(ctx)
 					switch r.URL.Path {
 					case "/test-json":
 						if ct.Key != KeyJson {
 							t.Fatal("expected json type")
 						}
-						return nil
+						return
 					case "/test-xml":
 						if ct.Key != KeyXml {
 							t.Fatal("expected xml type")
 						}
-						return nil
+						return
 					}
 					t.Fatal("this point should never have been reached")
-					return nil
 				}),
 				JsonAndXml)))
 
@@ -92,22 +90,21 @@ func TestResponse(t *testing.T) {
 	s := httptest.NewServer(
 		httpctx.Adapt(
 			Response(
-				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 					ct := ResponseTypeFromCtx(ctx)
 					switch r.URL.Path {
 					case "/test-json":
 						if ct.Key != KeyJson {
 							t.Fatal("expected json type")
 						}
-						return nil
+						return
 					case "/test-xml":
 						if ct.Key != KeyXml {
 							t.Fatal("expected xml type")
 						}
-						return nil
+						return
 					}
 					t.Fatal("this point should never have been reached")
-					return nil
 				}),
 				JsonAndXml)))
 

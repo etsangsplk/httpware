@@ -16,13 +16,13 @@ const (
 )
 
 type Handler interface {
-	ServeHTTPContext(context.Context, http.ResponseWriter, *http.Request) error
+	ServeHTTPContext(context.Context, http.ResponseWriter, *http.Request)
 }
 
-type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
+type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request)
 
-func (h HandlerFunc) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	return h(ctx, w, r)
+func (h HandlerFunc) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	h(ctx, w, r)
 }
 
 // Adapter is used to call a httpctx.Handler where a http.handler is expected.

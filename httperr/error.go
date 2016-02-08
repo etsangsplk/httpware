@@ -9,3 +9,7 @@ type Err struct {
 func (err Err) Error() string {
 	return err.Message
 }
+
+func Return(e Err) {
+	panic(e)
+}

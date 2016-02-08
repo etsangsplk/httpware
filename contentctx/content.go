@@ -77,11 +77,11 @@ func Request(next httpctx.Handler, types []*ContentType) httpctx.Handler {
 		panic("content types slice must not be empty")
 	}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		reqContType := GetContentMatch(r.Header.Get("Content-Type"), types)
 
 		newCtx := context.WithValue(ctx, httpctx.RequestContentTypeKey, reqContType)
-		return next.ServeHTTPContext(newCtx, w, r)
+		next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
@@ -90,12 +90,12 @@ func Response(next httpctx.Handler, types []*ContentType) httpctx.Handler {
 		panic("content types slice must not be empty")
 	}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		resContType := GetContentMatch(r.Header.Get("accept"), types)
 
 		w.Header().Set("Content-Type", resContType.Value)
 		newCtx := context.WithValue(ctx, httpctx.ResponseContentTypeKey, resContType)
-		return next.ServeHTTPContext(newCtx, w, r)
+		next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
@@ -110,16 +110,16 @@ func GetContentMatch(header string, cts []*ContentType) *ContentType {
 
 func Unmarshal(next httpctx.Handler, v interface{}, maxBytesSize int64, unmarshaller UnmarshalFunc) httpctx.Handler {
 	t := reflect.TypeOf(v)
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, maxBytesSize))
 		if err != nil {
-			return httperr.Err{
+			httperr.Return(httperr.Err{
 				StatusCode: http.StatusRequestEntityTooLarge,
 				Message:    "request size exceeded limit: " + err.Error(),
 				Fields: map[string]interface{}{
 					"byteLimit": maxBytesSize,
 				},
-			}
+			})
 		}
 
 		entity := reflect.New(t).Interface()
@@ -132,13 +132,13 @@ func Unmarshal(next httpctx.Handler, v interface{}, maxBytesSize int64, unmarsha
 			uf = ct.Unmarshal
 		}
 		if err := uf(body, entity); err != nil {
-			return httperr.Err{
+			httperr.Return(httperr.Err{
 				StatusCode: http.StatusBadRequest,
 				Message:    "unable to parse body: " + err.Error(),
-			}
+			})
 		}
 
 		newCtx := context.WithValue(ctx, httpctx.JsonEntityKey, entity)
-		return next.ServeHTTPContext(newCtx, w, r)
+		next.ServeHTTPContext(newCtx, w, r)
 	})
 }

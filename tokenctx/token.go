@@ -14,7 +14,7 @@ func TokenFromCtx(ctx context.Context) *jwt.Token {
 }
 
 func Auth(next httpctx.Handler, secret interface{}) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		token, err := jwt.ParseFromRequest(
 			r,
 			func(token *jwt.Token) (interface{}, error) {
@@ -24,12 +24,12 @@ func Auth(next httpctx.Handler, secret interface{}) httpctx.Handler {
 
 		if err == nil && token.Valid {
 			newCtx := context.WithValue(ctx, httpctx.TokenKey, token)
-			return next.ServeHTTPContext(newCtx, w, r)
+			next.ServeHTTPContext(newCtx, w, r)
 		} else {
-			return httperr.Err{
+			httperr.Return(httperr.Err{
 				StatusCode: http.StatusUnauthorized,
 				Message:    "invalid token",
-			}
+			})
 		}
 	})
 }
