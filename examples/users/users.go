@@ -35,7 +35,7 @@ func main() {
 
 	r := httprouter.New()
 
-	userDef := &entityctx.Definition{
+	userDef := entityctx.Definition{
 		Entity: user{},
 		Validate: func(u interface{}) error {
 			usr := u.(*user)

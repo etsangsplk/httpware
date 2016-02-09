@@ -41,7 +41,7 @@ func TestPostGet(t *testing.T) {
 			usr := u.(*user)
 			return []byte(usr.Id)
 		},
-		EntityDef: &entityctx.Definition{
+		EntityDef: entityctx.Definition{
 			Entity: user{},
 		},
 	}

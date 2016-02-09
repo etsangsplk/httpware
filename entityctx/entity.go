@@ -38,7 +38,7 @@ func EntityFromCtx(ctx context.Context) interface{} {
 	return ctx.Value(httpctx.EntityKey)
 }
 
-func Unmarshal(next httpctx.Handler, def *Definition) httpctx.Handler {
+func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
 	def.Inspect()
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, def.MaxByteSize))
@@ -70,7 +70,7 @@ func Unmarshal(next httpctx.Handler, def *Definition) httpctx.Handler {
 	})
 }
 
-func Validate(next httpctx.Handler, def *Definition) httpctx.Handler {
+func Validate(next httpctx.Handler, def Definition) httpctx.Handler {
 	def.Inspect()
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		e := EntityFromCtx(ctx)

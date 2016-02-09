@@ -38,7 +38,7 @@ type Definition struct {
 	BucketPath string
 	Identify   Identifier
 	IdParam    string
-	EntityDef  *entityctx.Definition
+	EntityDef  entityctx.Definition
 }
 
 type Identifier func(interface{}) []byte
@@ -110,6 +110,8 @@ func Get(def Definition) httpctx.Handler {
 	}
 	bktDepth := len(bktsPath)
 
+	def.EntityDef.Inspect()
+
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		ps := routerctx.ParamsFromCtx(ctx)
 		if ps == nil {
@@ -144,12 +146,6 @@ func Get(def Definition) httpctx.Handler {
 			panic("missing required middleware: contentctx.Response")
 		}
 
-		/*
-			entity := struct {
-				Id   string
-				Name string
-			}{}
-		*/
 		entity := def.EntityDef.NewEntity()
 		buf := bytes.NewReader(dbGob)
 		err = gob.NewDecoder(buf).Decode(entity)

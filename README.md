@@ -31,7 +31,7 @@ type User struct {
 func main() {
 
     // Define the user entity.
-    userDef := &entityctx.Definition{
+    userDef := entityctx.Definition{
         Entity: User{},
         Validate: func(u interface{}) error {
             usr := u.(*User)

@@ -17,7 +17,7 @@ type user struct {
 }
 
 func TestUnmarshal(t *testing.T) {
-	userDef := &Definition{
+	userDef := Definition{
 		Entity: user{},
 	}
 

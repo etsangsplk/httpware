@@ -31,7 +31,7 @@ func Get(h httpctx.HandlerFunc) httprouter.Handle {
 	)
 }
 
-func Post(h httpctx.HandlerFunc, entityDef *entityctx.Definition) httprouter.Handle {
+func Post(h httpctx.HandlerFunc, entityDef entityctx.Definition) httprouter.Handle {
 	return routerctx.Adapt(
 		errorctx.Handle(
 			logctx.Requests(
@@ -56,7 +56,7 @@ func Post(h httpctx.HandlerFunc, entityDef *entityctx.Definition) httprouter.Han
 	)
 }
 
-func Put(h httpctx.HandlerFunc, entityDef *entityctx.Definition) httprouter.Handle {
+func Put(h httpctx.HandlerFunc, entityDef entityctx.Definition) httprouter.Handle {
 	return Post(h, entityDef)
 }
 
