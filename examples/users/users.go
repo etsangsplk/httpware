@@ -14,10 +14,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/contextware/contentctx"
-	"github.com/nstogner/contextware/easyctx"
-	"github.com/nstogner/contextware/entityctx"
-	"github.com/nstogner/contextware/routerctx"
+	"github.com/nstogner/ctxware/contentctx"
+	"github.com/nstogner/ctxware/easyctx"
+	"github.com/nstogner/ctxware/entityctx"
+	"github.com/nstogner/ctxware/routerctx"
 
 	"golang.org/x/net/context"
 )

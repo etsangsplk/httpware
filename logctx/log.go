@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/nstogner/contextware/httpctx"
-	"github.com/nstogner/contextware/httperr"
+	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/httperr"
 	"golang.org/x/net/context"
 )
 

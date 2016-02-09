@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/nstogner/contextware/contentctx"
-	"github.com/nstogner/contextware/httpctx"
-	"github.com/nstogner/contextware/httperr"
+	"github.com/nstogner/ctxware/contentctx"
+	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/httperr"
 	"golang.org/x/net/context"
 )
 

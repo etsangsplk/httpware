@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/boltdb/bolt"
-	"github.com/nstogner/contextware/contentctx"
-	"github.com/nstogner/contextware/entityctx"
-	"github.com/nstogner/contextware/errorctx"
-	"github.com/nstogner/contextware/httpctx"
+	"github.com/nstogner/ctxware/contentctx"
+	"github.com/nstogner/ctxware/entityctx"
+	"github.com/nstogner/ctxware/errorctx"
+	"github.com/nstogner/ctxware/httpctx"
 )
 
 type user struct {

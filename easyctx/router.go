@@ -2,12 +2,12 @@ package easyctx
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/contextware/contentctx"
-	"github.com/nstogner/contextware/entityctx"
-	"github.com/nstogner/contextware/errorctx"
-	"github.com/nstogner/contextware/httpctx"
-	"github.com/nstogner/contextware/logctx"
-	"github.com/nstogner/contextware/routerctx"
+	"github.com/nstogner/ctxware/contentctx"
+	"github.com/nstogner/ctxware/entityctx"
+	"github.com/nstogner/ctxware/errorctx"
+	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/logctx"
+	"github.com/nstogner/ctxware/routerctx"
 )
 
 var MaxBytesSize = int64(1000000)

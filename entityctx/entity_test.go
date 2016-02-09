@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/contextware/contentctx"
-	"github.com/nstogner/contextware/httpctx"
+	"github.com/nstogner/ctxware/contentctx"
+	"github.com/nstogner/ctxware/httpctx"
 	"golang.org/x/net/context"
 )
 

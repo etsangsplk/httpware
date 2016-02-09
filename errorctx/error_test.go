@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/contextware/httpctx"
-	"github.com/nstogner/contextware/httperr"
+	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/httperr"
 	"golang.org/x/net/context"
 )
 
@@ -20,6 +20,7 @@ func TestHandle(t *testing.T) {
 						Message:    "better luck next time",
 					})
 				}),
+				false,
 			)))
 
 	resp, err := http.Get(s.URL)

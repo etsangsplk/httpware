@@ -1,4 +1,4 @@
-# contextware
+# ctxware
 
 #### Golang HTTP middleware using net/context
 **NOTE: CURRENTLY UNDER HEAVY DEVELOPMENT**
