@@ -26,5 +26,9 @@ func AdaptFunc(hf httpctx.HandlerFunc) httprouter.Handle {
 }
 
 func ParamsFromCtx(ctx context.Context) map[string]string {
-	return ctx.Value(httpctx.ParamsKey).(map[string]string)
+	params := ctx.Value(httpctx.ParamsKey)
+	if params == nil {
+		return nil
+	}
+	return params.(map[string]string)
 }

@@ -10,7 +10,7 @@ import (
 const (
 	TokenKey               = 0
 	ParamsKey              = 1
-	JsonEntityKey          = 2
+	EntityKey              = 2
 	RequestContentTypeKey  = 3
 	ResponseContentTypeKey = 4
 )
