@@ -15,11 +15,16 @@ func Adapt(h httpctx.Handler) httprouter.Handle {
 func AdaptFunc(hf httpctx.HandlerFunc) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ctx := context.Background()
-		paramsCtx := context.WithValue(ctx, httpctx.ParamsKey, ps)
+		// Standardize params to be a map so that the same can be done w/ other routers.
+		params := make(map[string]string)
+		for _, p := range ps {
+			params[p.Key] = p.Value
+		}
+		paramsCtx := context.WithValue(ctx, httpctx.ParamsKey, params)
 		hf.ServeHTTPContext(paramsCtx, w, r)
 	}
 }
 
-func ParamsFromCtx(ctx context.Context) httprouter.Params {
-	return ctx.Value(httpctx.ParamsKey).(httprouter.Params)
+func ParamsFromCtx(ctx context.Context) map[string]string {
+	return ctx.Value(httpctx.ParamsKey).(map[string]string)
 }

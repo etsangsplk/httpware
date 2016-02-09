@@ -30,6 +30,7 @@ type User struct {
 
 func main() {
 
+    // Define the user entity.
     userDef := &entityctx.Definition{
         Entity: User{},
         Validate: func(u interface{}) error {
@@ -50,9 +51,9 @@ func main() {
 The use of such middleware allows for less cluttered handler functions:
 ```Go
 func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-    ps := routerctx.ParamsFromCtx(ctx)
+    params := routerctx.ParamsFromCtx(ctx)
+    usrId := params["id"]
 
-    usrId := ps.ByName("id")
     // Usually this would be a db call...
     u := &User{Id: usrId, Name: "sammy"}
 
@@ -66,7 +67,7 @@ func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) {
     // Store u in a database here.
     
     w.WriteHeader(http.StatusCreated)
-    rct := contentctx.ResponseTypeFromCtx(ctx)
-    rct.MarshalWrite(w, u)
+    rt := contentctx.ResponseTypeFromCtx(ctx)
+    rt.MarshalWrite(w, u)
 }
 ```

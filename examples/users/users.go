@@ -64,9 +64,9 @@ func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	ps := routerctx.ParamsFromCtx(ctx)
+	params := routerctx.ParamsFromCtx(ctx)
 
-	usrId := ps.ByName("id")
+	usrId := params["id"]
 	u := &user{Id: usrId, Name: "sammy"}
 
 	ct := contentctx.ResponseTypeFromCtx(ctx)
