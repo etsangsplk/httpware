@@ -1,11 +1,11 @@
-package tokenctx
+package tokenmdl
 
 import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/httperr"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/lib/httperr"
 	"golang.org/x/net/context"
 )
 

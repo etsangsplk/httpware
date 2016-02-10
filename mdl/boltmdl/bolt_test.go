@@ -1,4 +1,4 @@
-package boltctx
+package boltmdl
 
 import (
 	"bytes"
@@ -11,12 +11,12 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/ctxware/contentctx"
-	"github.com/nstogner/ctxware/entityctx"
-	"github.com/nstogner/ctxware/errorctx"
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/logctx"
-	"github.com/nstogner/ctxware/routerctx"
+	"github.com/nstogner/ctxware/adp/httpadp"
+	"github.com/nstogner/ctxware/adp/routeradp"
+	"github.com/nstogner/ctxware/mdl/contentmdl"
+	"github.com/nstogner/ctxware/mdl/entitymdl"
+	"github.com/nstogner/ctxware/mdl/errormdl"
+	"github.com/nstogner/ctxware/mdl/logmdl"
 )
 
 type user struct {
@@ -37,27 +37,26 @@ func TestPostGet(t *testing.T) {
 		DB:         db,
 		BucketPath: "/users/",
 		IdParam:    "id",
-		Identify: func(u interface{}) []byte {
-			usr := u.(*user)
-			return []byte(usr.Id)
+		Identify: func(u interface{}) string {
+			return u.(*user).Id
 		},
-		EntityDef: entityctx.Definition{
+		EntityDef: entitymdl.Definition{
 			Entity: user{},
 		},
 	}
 
 	ps := httptest.NewServer(
-		httpctx.Adapt(
-			errorctx.Handle(
-				contentctx.Request(
-					contentctx.Response(
-						entityctx.Unmarshal(
-							Post(def),
+		httpadp.Adapt(
+			errormdl.Handle(
+				contentmdl.Request(
+					contentmdl.Response(
+						entitymdl.Unmarshal(
+							Post(nil, def),
 							def.EntityDef,
 						),
-						contentctx.JsonAndXml,
+						contentmdl.JsonAndXml,
 					),
-					contentctx.JsonAndXml,
+					contentmdl.JsonAndXml,
 				),
 				false,
 			),
@@ -74,12 +73,12 @@ func TestPostGet(t *testing.T) {
 	// Test Get...
 	r := httprouter.New()
 	r.GET("/users/:id",
-		routerctx.Adapt(
-			errorctx.Handle(
-				logctx.Errors(
-					contentctx.Response(
-						Get(def),
-						contentctx.JsonAndXml,
+		routeradp.Adapt(
+			errormdl.Handle(
+				logmdl.Errors(
+					contentmdl.Response(
+						Get(nil, def),
+						contentmdl.JsonAndXml,
 					),
 				),
 				false,

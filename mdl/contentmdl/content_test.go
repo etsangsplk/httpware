@@ -1,12 +1,12 @@
-package contentctx
+package contentmdl
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware/httpctx"
-
+	"github.com/nstogner/ctxware/adp/httpadp"
+	"github.com/nstogner/ctxware/lib/httpctx"
 	"golang.org/x/net/context"
 )
 
@@ -17,7 +17,7 @@ type user struct {
 
 func TestRequest(t *testing.T) {
 	s := httptest.NewServer(
-		httpctx.Adapt(
+		httpadp.Adapt(
 			Request(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 					ct := RequestTypeFromCtx(ctx)
@@ -62,7 +62,7 @@ func TestRequest(t *testing.T) {
 
 func TestResponse(t *testing.T) {
 	s := httptest.NewServer(
-		httpctx.Adapt(
+		httpadp.Adapt(
 			Response(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 					ct := ResponseTypeFromCtx(ctx)

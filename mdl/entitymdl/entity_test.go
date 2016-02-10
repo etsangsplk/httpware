@@ -1,4 +1,4 @@
-package entityctx
+package entitymdl
 
 import (
 	"bytes"
@@ -6,8 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware/contentctx"
-	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/adp/httpadp"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/mdl/contentmdl"
+
 	"golang.org/x/net/context"
 )
 
@@ -22,8 +24,8 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	s := httptest.NewServer(
-		httpctx.Adapt(
-			contentctx.Request(
+		httpadp.Adapt(
+			contentmdl.Request(
 				Unmarshal(
 					httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 						u := EntityFromCtx(ctx).(*user)
@@ -35,7 +37,7 @@ func TestUnmarshal(t *testing.T) {
 						}
 					}),
 					userDef),
-				contentctx.JsonAndXml,
+				contentmdl.JsonAndXml,
 			),
 		),
 	)

@@ -1,4 +1,4 @@
-package contentctx
+package contentmdl
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/lib/httpctx"
 
 	"golang.org/x/net/context"
 )

@@ -1,11 +1,12 @@
-package errorctx
+package errormdl
 
 import (
 	"net/http"
 
-	"github.com/nstogner/ctxware/contentctx"
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/httperr"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/lib/httperr"
+	"github.com/nstogner/ctxware/mdl/contentmdl"
+
 	"golang.org/x/net/context"
 )
 
@@ -25,11 +26,11 @@ func Handle(next httpctx.Handler, catchAll bool) httpctx.Handler {
 				if httpErr.StatusCode >= 500 {
 					httpErr.Message = http.StatusText(httpErr.StatusCode)
 				}
-				rct := contentctx.ResponseTypeFromCtx(ctx)
+				rct := contentmdl.ResponseTypeFromCtx(ctx)
 				// If the response content type has not already been parsed by upstream middleware
 				// then it must be parsed now.
 				if rct == nil {
-					rct = contentctx.GetContentMatch(w.Header().Get("Accept"), contentctx.JsonAndXml)
+					rct = contentmdl.GetContentMatch(w.Header().Get("Accept"), contentmdl.JsonAndXml)
 				}
 
 				rct.MarshalWrite(w, httpErr)

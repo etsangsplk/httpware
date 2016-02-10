@@ -1,13 +1,14 @@
-package entityctx
+package entitymdl
 
 import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
 
-	"github.com/nstogner/ctxware/contentctx"
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/httperr"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/lib/httperr"
+	"github.com/nstogner/ctxware/mdl/contentmdl"
+
 	"golang.org/x/net/context"
 )
 
@@ -25,9 +26,6 @@ type Validator func(interface{}) error
 
 func (d *Definition) Inspect() {
 	d.reflectedType = reflect.TypeOf(d.Entity)
-	if d.MaxByteSize == 0 {
-		d.MaxByteSize = maxInt64
-	}
 }
 
 func (d *Definition) NewEntity() interface{} {
@@ -39,6 +37,9 @@ func EntityFromCtx(ctx context.Context) interface{} {
 }
 
 func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
+	if def.MaxByteSize == 0 {
+		def.MaxByteSize = maxInt64
+	}
 	def.Inspect()
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, def.MaxByteSize))
@@ -54,9 +55,9 @@ func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
 
 		entity := def.NewEntity()
 
-		ct := contentctx.RequestTypeFromCtx(ctx)
+		ct := contentmdl.RequestTypeFromCtx(ctx)
 		if ct == nil {
-			panic("missing required middleware: contentctx.Request")
+			panic("missing required middleware: contentmdl.Request")
 		}
 		if err := ct.Unmarshal(body, entity); err != nil {
 			httperr.Return(httperr.Err{
@@ -71,11 +72,14 @@ func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
 }
 
 func Validate(next httpctx.Handler, def Definition) httpctx.Handler {
+	if def.Validate == nil {
+		panic("Validate field must be defined")
+	}
 	def.Inspect()
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		e := EntityFromCtx(ctx)
 		if e == nil {
-			panic("missing required middleware: entityctx.Unmarshal")
+			panic("missing required middleware: entitymdl.Unmarshal")
 		}
 
 		if err := def.Validate(e); err != nil {

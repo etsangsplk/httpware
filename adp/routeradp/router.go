@@ -1,10 +1,10 @@
-package routerctx
+package routeradp
 
 import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/ctxware/httpctx"
+	"github.com/nstogner/ctxware/lib/httpctx"
 	"golang.org/x/net/context"
 )
 

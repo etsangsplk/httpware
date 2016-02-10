@@ -3,25 +3,41 @@
 #### Golang HTTP middleware using net/context
 **NOTE: CURRENTLY UNDER HEAVY DEVELOPMENT**
 
-This repository is a collection of middleware packages which aid in writing http handlers in Go. All middleware is of the form:
+This repository contains a collection of stackable middleware packages which aid in writing http handlers in Go. All middleware is of the form:
 ```Go
 func(context.Context, http.ResponseWriter, *http.Request) 
 ```
+This repository contains three groups of "ware":
+* Middleware (mdl):
+  * Add singular functionality
+  * May depend on other middleware
+* Adaptorware (adp)
+  * Adapt other forms of handlers to the above form
+* Easyware (ezy)
+  * Consist of reasonable combinations of middleware and adaptorware
 
-#### Package Descriptions
+#### Middleware
 | Functionality | Package |
 |:--------------|:--------:|
-| Parsing Request & Response Content Types | contentctx |
-| Unmarshalling (json/xml) and validating entities | entityctx |
-| Handling errors | errorctx |
-| Compatibility with [httprouter](https://github.com/julienschmidt/httprouter) | routerctx |
-| JWT authentication | tokenctx |
-| Logging | logctx |
-| [BoltDB](https://github.com/boltdb/bolt) persistence | boltctx |
-| Reasonable compositions of the above middleware | easyctx |
+| Parsing Request & Response Content Types | contentmdl |
+| Unmarshalling (json/xml) and validating entities | entitymdl |
+| Handling errors | errormdl |
+| JWT authentication ([jwt-go](https://github.com/dgrijalva/jwt-go)) | tokenmdl |
+| Logging ([logrus](https://github.com/Sirupsen/logrus)) | logmdl |
+| [BoltDB](https://github.com/boltdb/bolt) persistence | boltmdl |
+#### Adaptorware
+| Functionality | Package |
+|:--------------|:--------:|
+| Compatibility with net/http | httpadp |
+| Compatibility with [httprouter](https://github.com/julienschmidt/httprouter) | routeradp |
+#### Easyware
+| Functionality | Package |
+|:--------------|:--------:|
+| Reasonable middleware adapted for [httprouter](https://github.com/julienschmidt/httprouter) | routerezy |
+| Reasonable middleware adapted for [boltdb](https://github.com/boltdb/bolt) | routerezy |
 
-#### Using the Reasonable Middleware Compositions (easyctx)
-The easyctx package includes an opinionated set of functions (middleware compositions) which should cover most use cases. These functions are adapted for use with the [httprouter](https://github.com/julienschmidt/httprouter) package:
+#### Example: Easyware (routerezy)
+The routerezy package includes an opinionated set of functions (middleware compositions) which should cover most use cases. These functions are adapted for use with the [httprouter](https://github.com/julienschmidt/httprouter) package:
 ```Go
 type User struct {
     Id string `json:"id" xml:"id"`
@@ -31,7 +47,7 @@ type User struct {
 func main() {
 
     // Define the user entity.
-    userDef := entityctx.Definition{
+    userDef := entitymdl.Definition{
         Entity: User{},
         Validate: func(u interface{}) error {
             usr := u.(*User)
@@ -43,31 +59,31 @@ func main() {
     }
 
     r := httprouter.New()
-    r.GET("/:id", easyctx.Get(handleGet))
-    r.POST("/", easyctx.Post(handlePost, userDef))
+    r.GET("/:id", routerezy.Get(handleGet))
+    r.POST("/", routerezy.Post(handlePost, userDef))
     http.ListenAndServe(":8080", r)
 }
 ```
 The use of such middleware allows for less cluttered handler functions:
 ```Go
 func handleGet(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-    params := routerctx.ParamsFromCtx(ctx)
+    params := routermdl.ParamsFromCtx(ctx)
     usrId := params["id"]
 
     // Usually this would be a db call...
     u := &User{Id: usrId, Name: "sammy"}
 
-    ct := contentctx.ResponseTypeFromCtx(ctx)
+    ct := contentmdl.ResponseTypeFromCtx(ctx)
     ct.MarshalWrite(w, u)
 }
 
 func handlePost(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-    u := contentctx.EntityFromCtx(ctx).(*User)
+    u := contentmdl.EntityFromCtx(ctx).(*User)
 
     // Store u in a database here.
     
     w.WriteHeader(http.StatusCreated)
-    rt := contentctx.ResponseTypeFromCtx(ctx)
+    rt := contentmdl.ResponseTypeFromCtx(ctx)
     rt.MarshalWrite(w, u)
 }
 ```

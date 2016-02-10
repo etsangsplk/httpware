@@ -1,4 +1,4 @@
-package boltctx
+package boltmdl
 
 import (
 	"bytes"
@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/boltdb/bolt"
-	"github.com/nstogner/ctxware/contentctx"
-	"github.com/nstogner/ctxware/entityctx"
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/httperr"
-	"github.com/nstogner/ctxware/routerctx"
+	"github.com/nstogner/ctxware/adp/routeradp"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/lib/httperr"
+	"github.com/nstogner/ctxware/mdl/contentmdl"
+	"github.com/nstogner/ctxware/mdl/entitymdl"
 	"golang.org/x/net/context"
 )
 
@@ -28,7 +28,7 @@ var (
 		},
 		ErrNotFound: httperr.Err{
 			StatusCode: http.StatusNotFound,
-			Message:    ErrAlreadyExists.Error(),
+			Message:    ErrNotFound.Error(),
 		},
 	}
 )
@@ -38,13 +38,13 @@ type Definition struct {
 	BucketPath string
 	Identify   Identifier
 	IdParam    string
-	EntityDef  entityctx.Definition
+	EntityDef  entitymdl.Definition
 }
 
-type Identifier func(interface{}) []byte
+type Identifier func(interface{}) string
 
-// Requires contentctx.Unmarshal
-func Post(def Definition) httpctx.Handler {
+// Requires contentmdl.Unmarshal
+func Post(next httpctx.Handler, def Definition) httpctx.Handler {
 	bktsPath := make([][]byte, 0)
 	for _, lvl := range strings.Split(def.BucketPath, "/") {
 		if lvl != "" {
@@ -54,12 +54,12 @@ func Post(def Definition) httpctx.Handler {
 	bktDepth := len(bktsPath)
 
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		entity := entityctx.EntityFromCtx(ctx)
+		entity := entitymdl.EntityFromCtx(ctx)
 		if entity == nil {
-			panic("missing required middleware: entityctx.Unmarshal")
+			panic("missing required middleware: entitymdl.Unmarshal")
 		}
 
-		id := def.Identify(entity)
+		id := []byte(def.Identify(entity))
 		buf := &bytes.Buffer{}
 		err := gob.NewEncoder(buf).Encode(entity)
 		if err != nil {
@@ -91,9 +91,9 @@ func Post(def Definition) httpctx.Handler {
 			httperr.Return(errorMap[err])
 		}
 
-		rct := contentctx.RequestTypeFromCtx(ctx)
+		rct := contentmdl.RequestTypeFromCtx(ctx)
 		if rct == nil {
-			panic("missing required middleware: contentctx.Response")
+			panic("missing required middleware: contentmdl.Response")
 		}
 		w.WriteHeader(http.StatusCreated)
 		rct.MarshalWrite(w, entity)
@@ -101,7 +101,7 @@ func Post(def Definition) httpctx.Handler {
 }
 
 // requires params to be set
-func Get(def Definition) httpctx.Handler {
+func Get(next httpctx.Handler, def Definition) httpctx.Handler {
 	bktsPath := make([][]byte, 0)
 	for _, lvl := range strings.Split(def.BucketPath, "/") {
 		if lvl != "" {
@@ -113,9 +113,9 @@ func Get(def Definition) httpctx.Handler {
 	def.EntityDef.Inspect()
 
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		ps := routerctx.ParamsFromCtx(ctx)
+		ps := routeradp.ParamsFromCtx(ctx)
 		if ps == nil {
-			panic("missing required middleware: routerctx.Adapt or the like")
+			panic("missing required middleware: routeradp.Adapt or the like")
 		}
 		id := ps[def.IdParam]
 		if id == "" {
@@ -141,9 +141,9 @@ func Get(def Definition) httpctx.Handler {
 			httperr.Return(errorMap[err])
 		}
 
-		rct := contentctx.ResponseTypeFromCtx(ctx)
+		rct := contentmdl.ResponseTypeFromCtx(ctx)
 		if rct == nil {
-			panic("missing required middleware: contentctx.Response")
+			panic("missing required middleware: contentmdl.Response")
 		}
 
 		entity := def.EntityDef.NewEntity()

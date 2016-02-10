@@ -1,12 +1,12 @@
-package logctx
+package logmdl
 
 import (
 	"errors"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/httperr"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/lib/httperr"
 	"golang.org/x/net/context"
 )
 

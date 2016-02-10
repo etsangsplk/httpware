@@ -1,18 +1,20 @@
-package errorctx
+package errormdl
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware/httpctx"
-	"github.com/nstogner/ctxware/httperr"
+	"github.com/nstogner/ctxware/adp/httpadp"
+	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware/lib/httperr"
+
 	"golang.org/x/net/context"
 )
 
 func TestHandle(t *testing.T) {
 	s := httptest.NewServer(
-		httpctx.Adapt(
+		httpadp.Adapt(
 			Handle(
 				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 					httperr.Return(httperr.Err{
