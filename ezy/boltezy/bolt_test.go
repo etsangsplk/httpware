@@ -32,12 +32,10 @@ func TestPostGet(t *testing.T) {
 
 	// Define bolt user entity.
 	def := boltmdl.Definition{
-		DB:         db,
-		BucketPath: "/users/",
-		IdParam:    "id",
-		Identify: func(u interface{}) string {
-			return u.(*user).Id
-		},
+		DB:               db,
+		EntityBucketPath: "/users/",
+		IdParam:          "id",
+		IdField:          "Id",
 		EntityDef: entitymdl.Definition{
 			Entity:   user{},
 			Validate: func(u interface{}) error { return nil },

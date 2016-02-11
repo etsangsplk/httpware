@@ -38,12 +38,10 @@ func main() {
 	}
 
 	def := boltmdl.Definition{
-		DB:         db,
-		BucketPath: "/users/",
-		IdParam:    "id",
-		Identify: func(u interface{}) string {
-			return u.(*User).Id
-		},
+		DB:               db,
+		EntityBucketPath: "/users/",
+		IdParam:          "id",
+		IdField:          "Id",
 		EntityDef: entitymdl.Definition{
 			Entity: User{},
 			Validate: func(u interface{}) error {
