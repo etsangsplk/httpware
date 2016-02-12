@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+// TO RUN: go test -bench=. 2>/dev/null
 func BenchmarkGet(b *testing.B) {
 	r := httprouter.New()
 	r.GET("/test", Get(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
