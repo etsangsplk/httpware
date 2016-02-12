@@ -225,7 +225,7 @@ func update(next httpctx.Handler, def Definition, method string) httpctx.Handler
 			httperr.Return(httpErr)
 		}
 
-		rct := contentmdl.RequestTypeFromCtx(ctx)
+		rct := contentmdl.ResponseTypeFromCtx(ctx)
 		if rct == nil {
 			panic("missing required middleware: contentmdl.Response")
 		}
