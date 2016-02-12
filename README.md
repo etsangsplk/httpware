@@ -34,7 +34,7 @@ This repository contains three groups of "ware":
 | Functionality | Package |
 |:--------------|:--------:|
 | Reasonable middleware adapted for [httprouter](https://github.com/julienschmidt/httprouter) | routerezy |
-| Reasonable middleware adapted for [boltdb](https://github.com/boltdb/bolt) | boltezy |
+| Standardized [boltdb](https://github.com/boltdb/bolt) persistence using httprouter | boltezy |
 
 #### Example: Easyware (routerezy)
 The routerezy package includes an opinionated set of functions (middleware compositions) which should cover most use cases. These functions are adapted for use with the [httprouter](https://github.com/julienschmidt/httprouter) package:
