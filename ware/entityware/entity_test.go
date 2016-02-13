@@ -1,4 +1,4 @@
-package entitymdl
+package entityware
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/mdl/contentmdl"
+	"github.com/nstogner/ctxware/ware/contentware"
 
 	"golang.org/x/net/context"
 )
@@ -19,7 +19,7 @@ type user struct {
 
 func TestParser(t *testing.T) {
 	c := ctxware.MustCompose(
-		contentmdl.NewReqType(contentmdl.JsonAndXml),
+		contentware.NewReqType(contentware.JsonAndXml),
 		NewParser(user{}, Maximum),
 	)
 

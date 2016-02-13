@@ -1,4 +1,4 @@
-package contentmdl
+package contentware
 
 import (
 	"encoding/json"
@@ -79,7 +79,7 @@ func NewReqType(types []*ContentType) ReqType {
 }
 
 func (rq ReqType) Name() string {
-	return "contentmdl.ReqType"
+	return "contentware.ReqType"
 }
 
 func (rq ReqType) Dependencies() []string {
@@ -109,7 +109,7 @@ func NewRespType(types []*ContentType) RespType {
 }
 
 func (rp RespType) Name() string {
-	return "contentmdl.RespType"
+	return "contentware.RespType"
 }
 
 func (rp RespType) Dependencies() []string {

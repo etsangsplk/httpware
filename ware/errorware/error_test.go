@@ -1,4 +1,4 @@
-package errormdl
+package errorware
 
 import (
 	"net/http"

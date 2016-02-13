@@ -1,4 +1,4 @@
-package logmdl
+package logware
 
 import (
 	"net/http"
@@ -12,12 +12,12 @@ import (
 type ReqLogger struct {
 }
 
-func NewReqLogger(secret interface{}) ReqLogger {
+func NewReqLogger() ReqLogger {
 	return ReqLogger{}
 }
 
 func (rl ReqLogger) Name() string {
-	return "logmdl.ReqLogger"
+	return "logware.ReqLogger"
 }
 
 func (rl ReqLogger) Dependencies() []string {
@@ -37,12 +37,12 @@ func (rl ReqLogger) Handle(next ctxware.Handler) ctxware.Handler {
 type ErrLogger struct {
 }
 
-func NewErrLogger(secret interface{}) ErrLogger {
+func NewErrLogger() ErrLogger {
 	return ErrLogger{}
 }
 
 func (el ErrLogger) Name() string {
-	return "logmdl.ErrLogger"
+	return "logware.ErrLogger"
 }
 
 func (el ErrLogger) Dependencies() []string {

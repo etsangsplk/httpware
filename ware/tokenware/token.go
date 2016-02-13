@@ -1,4 +1,4 @@
-package tokenmdl
+package tokenware
 
 import (
 	"net/http"
@@ -20,7 +20,7 @@ func New(secret interface{}) Ware {
 }
 
 func (w Ware) Name() string {
-	return "tokenmdl.Ware"
+	return "tokenware.Ware"
 }
 
 func (w Ware) Dependencies() []string {

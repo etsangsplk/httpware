@@ -1,11 +1,11 @@
-package errormdl
+package errorware
 
 import (
 	"net/http"
 
 	"github.com/nstogner/ctxware"
 	"github.com/nstogner/ctxware/lib/httperr"
-	"github.com/nstogner/ctxware/mdl/contentmdl"
+	"github.com/nstogner/ctxware/ware/contentware"
 
 	"golang.org/x/net/context"
 )
@@ -18,7 +18,7 @@ func New() Ware {
 }
 
 func (w Ware) Name() string {
-	return "errormdl.Ware"
+	return "errorware.Ware"
 }
 
 func (w Ware) Dependencies() []string {
@@ -45,11 +45,11 @@ func (w Ware) Handle(next ctxware.Handler) ctxware.Handler {
 				respErr.Message = err.Error()
 			}
 
-			rct := contentmdl.ResponseTypeFromCtx(ctx)
+			rct := contentware.ResponseTypeFromCtx(ctx)
 			// If the response content type has not already been parsed by upstream middleware
 			// then it must be parsed now.
 			if rct == nil {
-				rct = contentmdl.GetContentMatch(w.Header().Get("Accept"), contentmdl.JsonAndXml)
+				rct = contentware.GetContentMatch(w.Header().Get("Accept"), contentware.JsonAndXml)
 			}
 			rct.MarshalWrite(w, respErr)
 		}

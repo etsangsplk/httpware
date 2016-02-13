@@ -1,4 +1,4 @@
-package contentmdl
+package contentware
 
 import (
 	"net/http"

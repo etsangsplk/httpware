@@ -1,4 +1,4 @@
-package entitymdl
+package entityware
 
 import (
 	"io/ioutil"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/nstogner/ctxware"
 	"github.com/nstogner/ctxware/lib/httperr"
-	"github.com/nstogner/ctxware/mdl/contentmdl"
+	"github.com/nstogner/ctxware/ware/contentware"
 
 	"golang.org/x/net/context"
 )
@@ -35,11 +35,11 @@ func NewParser(entity interface{}, maxSize int64) Parser {
 }
 
 func (p Parser) Name() string {
-	return "entitymdl.Parser"
+	return "entityware.Parser"
 }
 
 func (p Parser) Dependencies() []string {
-	return []string{"contentmdl.ReqType"}
+	return []string{"contentware.ReqType"}
 }
 
 func (p Parser) NewEntity() interface{} {
@@ -61,7 +61,7 @@ func (p Parser) Handle(next ctxware.Handler) ctxware.Handler {
 
 		entity := p.NewEntity()
 
-		ct := contentmdl.RequestTypeFromCtx(ctx)
+		ct := contentware.RequestTypeFromCtx(ctx)
 		if err := ct.Unmarshal(body, entity); err != nil {
 			return httperr.Err{
 				StatusCode: http.StatusBadRequest,
@@ -92,11 +92,11 @@ func NewValidator(vf ValidateFunc) Validator {
 }
 
 func (v Validator) Name() string {
-	return "entitymdl.Validator"
+	return "entityware.Validator"
 }
 
 func (v Validator) Dependencies() []string {
-	return []string{"entitymdl.Parser"}
+	return []string{"entityware.Parser"}
 }
 
 func (v Validator) Handle(next ctxware.Handler) ctxware.Handler {

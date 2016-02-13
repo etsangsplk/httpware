@@ -42,6 +42,10 @@ func (ch CompositeHandler) ServeHTTPContext(ctx context.Context, w http.Response
 	return ch.h.ServeHTTPContext(ctx, w, r)
 }
 
+func (c Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
+	return c.Then(hf)
+}
+
 func (c Composite) Then(h Handler) CompositeHandler {
 	for i := len(c.middle) - 1; i >= 0; i-- {
 		h = c.middle[i].Handle(h)
