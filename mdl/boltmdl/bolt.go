@@ -26,6 +26,7 @@ var (
 	ErrNotFound          = errors.New("entity not found")
 	ErrETagNoMatch       = errors.New("e-tag does not match")
 	ErrMissingETagHeader = errors.New("missing e-tag header")
+	ErrMissingURLid      = errors.New("missing id in url")
 
 	errorMap = map[error]httperr.Err{
 		ErrAlreadyExists: httperr.Err{
@@ -43,6 +44,10 @@ var (
 		ErrMissingETagHeader: httperr.Err{
 			StatusCode: http.StatusBadRequest,
 			Message:    ErrMissingETagHeader.Error(),
+		},
+		ErrMissingURLid: httperr.Err{
+			StatusCode: http.StatusBadRequest,
+			Message:    ErrMissingURLid.Error(),
 		},
 	}
 )
@@ -186,7 +191,7 @@ func update(next httpctx.Handler, def Definition, method string) httpctx.Handler
 		panic("only POST and PUT methods are supported")
 	}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		entity := entitymdl.EntityFromCtx(ctx)
 		if entity == nil {
 			panic("missing required middleware: entitymdl.Unmarshal")
@@ -196,17 +201,17 @@ func update(next httpctx.Handler, def Definition, method string) httpctx.Handler
 		buf := &bytes.Buffer{}
 		err := gob.NewEncoder(buf).Encode(entity)
 		if err != nil {
-			httperr.Return(httperr.Err{
+			return httperr.Err{
 				StatusCode: http.StatusInternalServerError,
 				Message:    err.Error(),
-			})
+			}
 		}
 		dbGob, err := ioutil.ReadAll(buf)
 		if err != nil {
-			httperr.Return(httperr.Err{
+			return httperr.Err{
 				StatusCode: http.StatusInternalServerError,
 				Message:    err.Error(),
-			})
+			}
 		}
 
 		var respCode int
@@ -217,12 +222,12 @@ func update(next httpctx.Handler, def Definition, method string) httpctx.Handler
 		if err != nil {
 			httpErr, match := errorMap[err]
 			if !match {
-				httperr.Return(httperr.Err{
+				return httperr.Err{
 					StatusCode: http.StatusInternalServerError,
 					Message:    err.Error(),
-				})
+				}
 			}
-			httperr.Return(httpErr)
+			return httpErr
 		}
 
 		rct := contentmdl.ResponseTypeFromCtx(ctx)
@@ -232,6 +237,7 @@ func update(next httpctx.Handler, def Definition, method string) httpctx.Handler
 		w.Header().Set("ETag", entityTag)
 		w.WriteHeader(respCode)
 		rct.MarshalWrite(w, entity)
+		return nil
 	})
 }
 
@@ -247,14 +253,14 @@ func Get(next httpctx.Handler, def Definition) httpctx.Handler {
 
 	def.EntityDef.Inspect()
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		ps := routeradp.ParamsFromCtx(ctx)
 		if ps == nil {
 			panic("missing required middleware: routeradp.Adapt or the like")
 		}
 		id := ps[def.IdParam]
 		if id == "" {
-			httperr.Return(errorMap[ErrAlreadyExists])
+			return errorMap[ErrMissingURLid]
 		}
 
 		var dbGob []byte
@@ -273,7 +279,7 @@ func Get(next httpctx.Handler, def Definition) httpctx.Handler {
 			return nil
 		})
 		if err != nil {
-			httperr.Return(errorMap[err])
+			return errorMap[err]
 		}
 
 		rct := contentmdl.ResponseTypeFromCtx(ctx)
@@ -285,12 +291,13 @@ func Get(next httpctx.Handler, def Definition) httpctx.Handler {
 		buf := bytes.NewReader(dbGob)
 		err = gob.NewDecoder(buf).Decode(entity)
 		if err != nil {
-			httperr.Return(httperr.Err{
+			return httperr.Err{
 				StatusCode: http.StatusInternalServerError,
 				Message:    err.Error(),
-			})
+			}
 		}
 
 		rct.MarshalWrite(w, entity)
+		return nil
 	})
 }

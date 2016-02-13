@@ -27,7 +27,7 @@ func TestUnmarshal(t *testing.T) {
 		httpadp.Adapt(
 			contentmdl.Request(
 				Unmarshal(
-					httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+					httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 						u := EntityFromCtx(ctx).(*user)
 						if u.Id != 123 {
 							t.Fatal("expected user id to equal 123")
@@ -35,6 +35,7 @@ func TestUnmarshal(t *testing.T) {
 						if u.Name != "abc" {
 							t.Fatal("expected user name to equal 'abc'")
 						}
+						return nil
 					}),
 					userDef),
 				contentmdl.JsonAndXml,

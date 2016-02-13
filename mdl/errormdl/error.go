@@ -11,40 +11,33 @@ import (
 )
 
 func Handle(next httpctx.Handler, catchAll bool) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			err := recover()
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
+			w.Header().Set("X-Content-Type-Options", "nosniff")
 
-			if err == nil {
-				return
-			}
+			respErr := httperr.Err{}
 
-			if httpErr, ok := err.(httperr.Err); ok {
-				w.Header().Set("X-Content-Type-Options", "nosniff")
-				w.WriteHeader(httpErr.StatusCode)
-
-				if httpErr.StatusCode >= 500 {
-					httpErr.Message = http.StatusText(httpErr.StatusCode)
+			if e, ok := err.(httperr.Err); ok {
+				w.WriteHeader(e.StatusCode)
+				respErr.StatusCode = e.StatusCode
+				if e.StatusCode >= 500 {
+					respErr.Message = http.StatusText(respErr.StatusCode)
 				}
-				rct := contentmdl.ResponseTypeFromCtx(ctx)
-				// If the response content type has not already been parsed by upstream middleware
-				// then it must be parsed now.
-				if rct == nil {
-					rct = contentmdl.GetContentMatch(w.Header().Get("Accept"), contentmdl.JsonAndXml)
-				}
-
-				rct.MarshalWrite(w, httpErr)
+				respErr.Fields = e.Fields
 			} else {
-				if catchAll {
-					// If a regular error was returned, resort to internal server error.
-					http.Error(w, "internal server error", http.StatusInternalServerError)
-				} else {
-					// Explode.
-					panic(err)
-				}
+				w.WriteHeader(http.StatusInternalServerError)
+				respErr.StatusCode = http.StatusInternalServerError
+				respErr.Message = err.Error()
 			}
-		}()
 
-		next.ServeHTTPContext(ctx, w, r)
+			rct := contentmdl.ResponseTypeFromCtx(ctx)
+			// If the response content type has not already been parsed by upstream middleware
+			// then it must be parsed now.
+			if rct == nil {
+				rct = contentmdl.GetContentMatch(w.Header().Get("Accept"), contentmdl.JsonAndXml)
+			}
+			rct.MarshalWrite(w, respErr)
+		}
+		return nil
 	})
 }

@@ -13,8 +13,9 @@ import (
 // TO RUN: go test -bench=. 2>/dev/null
 func BenchmarkGet(b *testing.B) {
 	r := httprouter.New()
-	r.GET("/test", Get(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	r.GET("/test", Get(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprintf(w, "handled")
+		return nil
 	}))
 	req, err := http.NewRequest("GET", "http://example.com/test", nil)
 	if err != nil {

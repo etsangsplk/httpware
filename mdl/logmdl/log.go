@@ -1,7 +1,6 @@
 package logmdl
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
@@ -11,47 +10,37 @@ import (
 )
 
 func Requests(next httpctx.Handler) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		logrus.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
 		}).Info("serving request...")
-		next.ServeHTTPContext(ctx, w, r)
+		return next.ServeHTTPContext(ctx, w, r)
 	})
 }
 
 func Errors(next httpctx.Handler) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			err := recover()
-			if err == nil {
-				return
-			}
-
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			if httpErr, ok := err.(httperr.Err); ok {
 				logrus.WithFields(logrus.Fields{
 					"method": r.Method,
 					"error":  httpErr,
 				}).Info("request failed")
-				// Propogate the http error along.
-				httperr.Return(httpErr)
+				// Pass the http error along.
+				return httpErr
 			} else {
-				msg, ok := err.(error)
-				if !ok {
-					msg = errors.New("unidentified error")
-				}
 				logrus.WithFields(logrus.Fields{
 					"method": r.Method,
 					"error": map[string]interface{}{
 						"statusCode": http.StatusInternalServerError,
-						"message":    msg,
+						"message":    err,
 					},
 				}).Info("request failed")
-				// Propogate the error along.
-				panic(err)
+				// Pass the error along.
+				return err
 			}
-		}()
-
-		next.ServeHTTPContext(ctx, w, r)
+		}
+		return nil
 	})
 }

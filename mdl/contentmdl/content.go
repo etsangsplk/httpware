@@ -70,11 +70,11 @@ func Request(next httpctx.Handler, types []*ContentType) httpctx.Handler {
 		panic("content types slice must not be empty")
 	}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		reqContType := GetContentMatch(r.Header.Get("Content-Type"), types)
 
 		newCtx := context.WithValue(ctx, httpctx.RequestContentTypeKey, reqContType)
-		next.ServeHTTPContext(newCtx, w, r)
+		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
@@ -83,12 +83,12 @@ func Response(next httpctx.Handler, types []*ContentType) httpctx.Handler {
 		panic("content types slice must not be empty")
 	}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		resContType := GetContentMatch(r.Header.Get("accept"), types)
 
 		w.Header().Set("Content-Type", resContType.Value)
 		newCtx := context.WithValue(ctx, httpctx.ResponseContentTypeKey, resContType)
-		next.ServeHTTPContext(newCtx, w, r)
+		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 

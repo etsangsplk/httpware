@@ -41,16 +41,16 @@ func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
 		def.MaxByteSize = maxInt64
 	}
 	def.Inspect()
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, def.MaxByteSize))
 		if err != nil {
-			httperr.Return(httperr.Err{
+			return httperr.Err{
 				StatusCode: http.StatusRequestEntityTooLarge,
 				Message:    "request size exceeded limit: " + err.Error(),
 				Fields: map[string]interface{}{
 					"byteLimit": def.MaxByteSize,
 				},
-			})
+			}
 		}
 
 		entity := def.NewEntity()
@@ -60,14 +60,14 @@ func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
 			panic("missing required middleware: contentmdl.Request")
 		}
 		if err := ct.Unmarshal(body, entity); err != nil {
-			httperr.Return(httperr.Err{
+			return httperr.Err{
 				StatusCode: http.StatusBadRequest,
 				Message:    "unable to parse body: " + err.Error(),
-			})
+			}
 		}
 
 		newCtx := context.WithValue(ctx, httpctx.EntityKey, entity)
-		next.ServeHTTPContext(newCtx, w, r)
+		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
@@ -76,19 +76,19 @@ func Validate(next httpctx.Handler, def Definition) httpctx.Handler {
 		panic("Validate field must be defined")
 	}
 	def.Inspect()
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		e := EntityFromCtx(ctx)
 		if e == nil {
 			panic("missing required middleware: entitymdl.Unmarshal")
 		}
 
 		if err := def.Validate(e); err != nil {
-			httperr.Return(httperr.Err{
+			return httperr.Err{
 				StatusCode: http.StatusBadRequest,
 				Message:    err.Error(),
-			})
+			}
 		}
 
-		next.ServeHTTPContext(ctx, w, r)
+		return next.ServeHTTPContext(ctx, w, r)
 	})
 }

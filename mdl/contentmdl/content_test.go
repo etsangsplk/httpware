@@ -19,21 +19,22 @@ func TestRequest(t *testing.T) {
 	s := httptest.NewServer(
 		httpadp.Adapt(
 			Request(
-				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 					ct := RequestTypeFromCtx(ctx)
 					switch r.URL.Path {
 					case "/test-json":
 						if ct.Key != KeyJson {
 							t.Fatal("expected json type")
 						}
-						return
+						return nil
 					case "/test-xml":
 						if ct.Key != KeyXml {
 							t.Fatal("expected xml type")
 						}
-						return
+						return nil
 					}
 					t.Fatal("this point should never have been reached")
+					return nil
 				}),
 				JsonAndXml)))
 
@@ -64,21 +65,22 @@ func TestResponse(t *testing.T) {
 	s := httptest.NewServer(
 		httpadp.Adapt(
 			Response(
-				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+				httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 					ct := ResponseTypeFromCtx(ctx)
 					switch r.URL.Path {
 					case "/test-json":
 						if ct.Key != KeyJson {
 							t.Fatal("expected json type")
 						}
-						return
+						return nil
 					case "/test-xml":
 						if ct.Key != KeyXml {
 							t.Fatal("expected xml type")
 						}
-						return
+						return nil
 					}
 					t.Fatal("this point should never have been reached")
+					return nil
 				}),
 				JsonAndXml)))
 
