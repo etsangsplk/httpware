@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware"
 
 	"golang.org/x/net/context"
 )
@@ -50,7 +50,7 @@ type ContentType struct {
 }
 
 func RequestTypeFromCtx(ctx context.Context) *ContentType {
-	ct := ctx.Value(httpctx.RequestContentTypeKey)
+	ct := ctx.Value(ctxware.RequestContentTypeKey)
 	if ct == nil {
 		return nil
 	}
@@ -58,36 +58,70 @@ func RequestTypeFromCtx(ctx context.Context) *ContentType {
 }
 
 func ResponseTypeFromCtx(ctx context.Context) *ContentType {
-	ct := ctx.Value(httpctx.ResponseContentTypeKey)
+	ct := ctx.Value(ctxware.ResponseContentTypeKey)
 	if ct == nil {
 		return nil
 	}
 	return ct.(*ContentType)
 }
 
-func Request(next httpctx.Handler, types []*ContentType) httpctx.Handler {
+type ReqType struct {
+	types []*ContentType
+}
+
+func NewReqType(types []*ContentType) ReqType {
 	if len(types) == 0 {
 		panic("content types slice must not be empty")
 	}
+	return ReqType{
+		types: types,
+	}
+}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		reqContType := GetContentMatch(r.Header.Get("Content-Type"), types)
+func (rq ReqType) Name() string {
+	return "contentmdl.ReqType"
+}
 
-		newCtx := context.WithValue(ctx, httpctx.RequestContentTypeKey, reqContType)
+func (rq ReqType) Dependencies() []string {
+	return []string{}
+}
+
+func (rq ReqType) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		reqContType := GetContentMatch(r.Header.Get("Content-Type"), rq.types)
+
+		newCtx := context.WithValue(ctx, ctxware.RequestContentTypeKey, reqContType)
 		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
-func Response(next httpctx.Handler, types []*ContentType) httpctx.Handler {
+type RespType struct {
+	types []*ContentType
+}
+
+func NewRespType(types []*ContentType) RespType {
 	if len(types) == 0 {
 		panic("content types slice must not be empty")
 	}
+	return RespType{
+		types: types,
+	}
+}
 
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		resContType := GetContentMatch(r.Header.Get("accept"), types)
+func (rp RespType) Name() string {
+	return "contentmdl.RespType"
+}
+
+func (rp RespType) Dependencies() []string {
+	return []string{}
+}
+
+func (rp RespType) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		resContType := GetContentMatch(r.Header.Get("accept"), rp.types)
 
 		w.Header().Set("Content-Type", resContType.Value)
-		newCtx := context.WithValue(ctx, httpctx.ResponseContentTypeKey, resContType)
+		newCtx := context.WithValue(ctx, ctxware.ResponseContentTypeKey, resContType)
 		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }

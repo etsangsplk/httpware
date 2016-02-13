@@ -5,60 +5,63 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware"
 	"github.com/nstogner/ctxware/lib/httperr"
 	"github.com/nstogner/ctxware/mdl/contentmdl"
 
 	"golang.org/x/net/context"
 )
 
-var maxInt64 = int64(^uint64(0) >> 1)
-
-type Definition struct {
-	Entity      interface{}
-	Validate    Validator
-	MaxByteSize int64
-
-	reflectedType reflect.Type
-}
-
-type Validator func(interface{}) error
-
-func (d *Definition) Inspect() {
-	d.reflectedType = reflect.TypeOf(d.Entity)
-}
-
-func (d *Definition) NewEntity() interface{} {
-	return reflect.New(d.reflectedType).Interface()
-}
+var Maximum = int64(^uint64(0) >> 1)
 
 func EntityFromCtx(ctx context.Context) interface{} {
-	return ctx.Value(httpctx.EntityKey)
+	return ctx.Value(ctxware.EntityKey)
 }
 
-func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
-	if def.MaxByteSize == 0 {
-		def.MaxByteSize = maxInt64
+// Parser
+
+type Parser struct {
+	entity        interface{}
+	reflectedType reflect.Type
+	maxSize       int64
+}
+
+func NewParser(entity interface{}, maxSize int64) Parser {
+	return Parser{
+		entity:        entity,
+		reflectedType: reflect.TypeOf(entity),
+		maxSize:       maxSize,
 	}
-	def.Inspect()
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, def.MaxByteSize))
+}
+
+func (p Parser) Name() string {
+	return "entitymdl.Parser"
+}
+
+func (p Parser) Dependencies() []string {
+	return []string{"contentmdl.ReqType"}
+}
+
+func (p Parser) NewEntity() interface{} {
+	return reflect.New(p.reflectedType).Interface()
+}
+
+func (p Parser) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, p.maxSize))
 		if err != nil {
 			return httperr.Err{
 				StatusCode: http.StatusRequestEntityTooLarge,
 				Message:    "request size exceeded limit: " + err.Error(),
 				Fields: map[string]interface{}{
-					"byteLimit": def.MaxByteSize,
+					"byteLimit": p.maxSize,
 				},
 			}
 		}
 
-		entity := def.NewEntity()
+		entity := p.NewEntity()
 
 		ct := contentmdl.RequestTypeFromCtx(ctx)
-		if ct == nil {
-			panic("missing required middleware: contentmdl.Request")
-		}
 		if err := ct.Unmarshal(body, entity); err != nil {
 			return httperr.Err{
 				StatusCode: http.StatusBadRequest,
@@ -66,23 +69,41 @@ func Unmarshal(next httpctx.Handler, def Definition) httpctx.Handler {
 			}
 		}
 
-		newCtx := context.WithValue(ctx, httpctx.EntityKey, entity)
+		newCtx := context.WithValue(ctx, ctxware.EntityKey, entity)
 		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
 
-func Validate(next httpctx.Handler, def Definition) httpctx.Handler {
-	if def.Validate == nil {
-		panic("Validate field must be defined")
-	}
-	def.Inspect()
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		e := EntityFromCtx(ctx)
-		if e == nil {
-			panic("missing required middleware: entitymdl.Unmarshal")
-		}
+// Validator
 
-		if err := def.Validate(e); err != nil {
+type Validator struct {
+	validate ValidateFunc
+}
+
+type ValidateFunc func(interface{}) error
+
+func NewValidator(vf ValidateFunc) Validator {
+	if vf == nil {
+		panic("validate func must not be nil")
+	}
+	return Validator{
+		validate: vf,
+	}
+}
+
+func (v Validator) Name() string {
+	return "entitymdl.Validator"
+}
+
+func (v Validator) Dependencies() []string {
+	return []string{"entitymdl.Parser"}
+}
+
+func (v Validator) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		e := EntityFromCtx(ctx)
+
+		if err := v.validate(e); err != nil {
 			return httperr.Err{
 				StatusCode: http.StatusBadRequest,
 				Message:    err.Error(),

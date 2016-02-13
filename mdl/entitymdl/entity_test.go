@@ -6,8 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware/adp/httpadp"
-	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware"
 	"github.com/nstogner/ctxware/mdl/contentmdl"
 
 	"golang.org/x/net/context"
@@ -18,28 +17,24 @@ type user struct {
 	Name string `json:"name"`
 }
 
-func TestUnmarshal(t *testing.T) {
-	userDef := Definition{
-		Entity: user{},
-	}
+func TestParser(t *testing.T) {
+	c := ctxware.MustCompose(
+		contentmdl.NewReqType(contentmdl.JsonAndXml),
+		NewParser(user{}, Maximum),
+	)
 
 	s := httptest.NewServer(
-		httpadp.Adapt(
-			contentmdl.Request(
-				Unmarshal(
-					httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-						u := EntityFromCtx(ctx).(*user)
-						if u.Id != 123 {
-							t.Fatal("expected user id to equal 123")
-						}
-						if u.Name != "abc" {
-							t.Fatal("expected user name to equal 'abc'")
-						}
-						return nil
-					}),
-					userDef),
-				contentmdl.JsonAndXml,
-			),
+		c.Then(
+			ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+				u := EntityFromCtx(ctx).(*user)
+				if u.Id != 123 {
+					t.Fatal("expected user id to equal 123")
+				}
+				if u.Name != "abc" {
+					t.Fatal("expected user name to equal 'abc'")
+				}
+				return nil
+			}),
 		),
 	)
 

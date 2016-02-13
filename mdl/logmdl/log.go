@@ -4,13 +4,28 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware"
 	"github.com/nstogner/ctxware/lib/httperr"
 	"golang.org/x/net/context"
 )
 
-func Requests(next httpctx.Handler) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+type ReqLogger struct {
+}
+
+func NewReqLogger(secret interface{}) ReqLogger {
+	return ReqLogger{}
+}
+
+func (rl ReqLogger) Name() string {
+	return "logmdl.ReqLogger"
+}
+
+func (rl ReqLogger) Dependencies() []string {
+	return []string{}
+}
+
+func (rl ReqLogger) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		logrus.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
@@ -19,8 +34,23 @@ func Requests(next httpctx.Handler) httpctx.Handler {
 	})
 }
 
-func Errors(next httpctx.Handler) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+type ErrLogger struct {
+}
+
+func NewErrLogger(secret interface{}) ErrLogger {
+	return ErrLogger{}
+}
+
+func (el ErrLogger) Name() string {
+	return "logmdl.ErrLogger"
+}
+
+func (el ErrLogger) Dependencies() []string {
+	return []string{}
+}
+
+func (el ErrLogger) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			if httpErr, ok := err.(httperr.Err); ok {
 				logrus.WithFields(logrus.Fields{

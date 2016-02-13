@@ -3,15 +3,30 @@ package errormdl
 import (
 	"net/http"
 
-	"github.com/nstogner/ctxware/lib/httpctx"
+	"github.com/nstogner/ctxware"
 	"github.com/nstogner/ctxware/lib/httperr"
 	"github.com/nstogner/ctxware/mdl/contentmdl"
 
 	"golang.org/x/net/context"
 )
 
-func Handle(next httpctx.Handler, catchAll bool) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+type Ware struct {
+}
+
+func New() Ware {
+	return Ware{}
+}
+
+func (w Ware) Name() string {
+	return "errormdl.Ware"
+}
+
+func (w Ware) Dependencies() []string {
+	return []string{}
+}
+
+func (w Ware) Handle(next ctxware.Handler) ctxware.Handler {
+	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			w.Header().Set("X-Content-Type-Options", "nosniff")
 
