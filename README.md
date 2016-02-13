@@ -30,14 +30,14 @@ Middleware can be composed together for easy use:
 func main() {
     // MustCompose chains together middleware. It will panic if middleware
     // dependencies are not met.
-    midware := ctxware.MustCompose(
+    m := ctxware.MustCompose(
         errorware.New(),
         logware.NewErrLogger(),
         logware.NewReqLogger(),
         contentware.NewRespType(contentware.JsonAndXml),
     )
 
-    http.ListenAndServe("localhost:8080", midware.ThenFunc(handle))
+    http.ListenAndServe("localhost:8080", m.ThenFunc(handle))
 }
 
 func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
