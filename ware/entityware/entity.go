@@ -12,7 +12,12 @@ import (
 	"golang.org/x/net/context"
 )
 
-var Maximum = int64(^uint64(0) >> 1)
+const (
+	KB  = 1024
+	MB  = 1024 * 1024
+	GB  = 1024 * 1024 * 1024
+	MAX = int64(^uint64(0) >> 1)
+)
 
 func EntityFromCtx(ctx context.Context) interface{} {
 	return ctx.Value(ctxware.EntityKey)
@@ -34,11 +39,11 @@ func NewParser(entity interface{}, maxSize int64) Parser {
 	}
 }
 
-func (p Parser) Name() string {
-	return "entityware.Parser"
+func (p Parser) Contains() []string {
+	return []string{"entityware.Parser"}
 }
 
-func (p Parser) Dependencies() []string {
+func (p Parser) Requires() []string {
 	return []string{"contentware.ReqType"}
 }
 
@@ -50,23 +55,14 @@ func (p Parser) Handle(next ctxware.Handler) ctxware.Handler {
 	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, p.maxSize))
 		if err != nil {
-			return httperr.Err{
-				StatusCode: http.StatusRequestEntityTooLarge,
-				Message:    "request size exceeded limit: " + err.Error(),
-				Fields: map[string]interface{}{
-					"byteLimit": p.maxSize,
-				},
-			}
+			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", p.maxSize)
 		}
 
 		entity := p.NewEntity()
 
 		ct := contentware.RequestTypeFromCtx(ctx)
 		if err := ct.Unmarshal(body, entity); err != nil {
-			return httperr.Err{
-				StatusCode: http.StatusBadRequest,
-				Message:    "unable to parse body: " + err.Error(),
-			}
+			httperr.New("unable to parse body: "+err.Error(), http.StatusBadRequest)
 		}
 
 		newCtx := context.WithValue(ctx, ctxware.EntityKey, entity)
@@ -91,11 +87,11 @@ func NewValidator(vf ValidateFunc) Validator {
 	}
 }
 
-func (v Validator) Name() string {
-	return "entityware.Validator"
+func (v Validator) Contains() []string {
+	return []string{"entityware.Validator"}
 }
 
-func (v Validator) Dependencies() []string {
+func (v Validator) Requires() []string {
 	return []string{"entityware.Parser"}
 }
 
@@ -104,10 +100,7 @@ func (v Validator) Handle(next ctxware.Handler) ctxware.Handler {
 		e := EntityFromCtx(ctx)
 
 		if err := v.validate(e); err != nil {
-			return httperr.Err{
-				StatusCode: http.StatusBadRequest,
-				Message:    err.Error(),
-			}
+			return httperr.New(err.Error(), http.StatusBadRequest)
 		}
 
 		return next.ServeHTTPContext(ctx, w, r)

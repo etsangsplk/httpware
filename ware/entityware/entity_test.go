@@ -20,7 +20,7 @@ type user struct {
 func TestParser(t *testing.T) {
 	c := ctxware.MustCompose(
 		contentware.NewReqType(contentware.JsonAndXml),
-		NewParser(user{}, Maximum),
+		NewParser(user{}, MAX),
 	)
 
 	s := httptest.NewServer(

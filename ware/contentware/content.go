@@ -78,11 +78,11 @@ func NewReqType(types []*ContentType) ReqType {
 	}
 }
 
-func (rq ReqType) Name() string {
-	return "contentware.ReqType"
+func (rq ReqType) Contains() []string {
+	return []string{"contentware.ReqType"}
 }
 
-func (rq ReqType) Dependencies() []string {
+func (rq ReqType) Requires() []string {
 	return []string{}
 }
 
@@ -108,11 +108,11 @@ func NewRespType(types []*ContentType) RespType {
 	}
 }
 
-func (rp RespType) Name() string {
-	return "contentware.RespType"
+func (rp RespType) Contains() []string {
+	return []string{"contentware.RespType"}
 }
 
-func (rp RespType) Dependencies() []string {
+func (rp RespType) Requires() []string {
 	return []string{}
 }
 

@@ -17,11 +17,11 @@ func New() Ware {
 	return Ware{}
 }
 
-func (w Ware) Name() string {
-	return "errorware.Ware"
+func (w Ware) Contains() []string {
+	return []string{"errorware.Ware"}
 }
 
-func (w Ware) Dependencies() []string {
+func (w Ware) Requires() []string {
 	return []string{}
 }
 

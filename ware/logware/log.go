@@ -60,11 +60,11 @@ func NewReqLogger(def Def) ReqLogger {
 	return ReqLogger{def}
 }
 
-func (rl ReqLogger) Name() string {
-	return "logware.ReqLogger"
+func (rl ReqLogger) Contains() []string {
+	return []string{"logware.ReqLogger"}
 }
 
-func (rl ReqLogger) Dependencies() []string {
+func (rl ReqLogger) Requires() []string {
 	return []string{}
 }
 
@@ -92,11 +92,11 @@ func NewErrLogger(def Def) ErrLogger {
 	return ErrLogger{def}
 }
 
-func (el ErrLogger) Name() string {
-	return "logware.ErrLogger"
+func (el ErrLogger) Contains() []string {
+	return []string{"logware.ErrLogger"}
 }
 
-func (el ErrLogger) Dependencies() []string {
+func (el ErrLogger) Requires() []string {
 	return []string{}
 }
 

@@ -19,15 +19,15 @@ func New(secret interface{}) Ware {
 	}
 }
 
-func (w Ware) Name() string {
-	return "tokenware.Ware"
+func (w Ware) Contains() []string {
+	return []string{"tokenware.Ware"}
 }
 
-func (w Ware) Dependencies() []string {
+func (w Ware) Requires() []string {
 	return []string{"errorware.Ware"}
 }
 
-func Token(ctx context.Context) *jwt.Token {
+func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(ctxware.TokenKey).(*jwt.Token)
 }
 
@@ -44,10 +44,7 @@ func (ware Ware) Handle(next ctxware.Handler) ctxware.Handler {
 			newCtx := context.WithValue(ctx, ctxware.TokenKey, token)
 			return next.ServeHTTPContext(newCtx, w, r)
 		} else {
-			return httperr.Err{
-				StatusCode: http.StatusUnauthorized,
-				Message:    "invalid token",
-			}
+			return httperr.New("invalid token", http.StatusUnauthorized)
 		}
 	})
 }

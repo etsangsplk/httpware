@@ -8,26 +8,58 @@ import (
 )
 
 type Middleware interface {
-	Name() string
-	Dependencies() []string
+	Contains() []string
+	Requires() []string
 	Handle(Handler) Handler
 }
 
 type Composite struct {
-	middle []Middleware
+	middle   []Middleware
+	contains []string
 }
 
 func MustCompose(mdlw ...Middleware) Composite {
-	names := make(map[string]bool, 0)
+	contains := make(map[string]bool)
 	for _, m := range mdlw {
-		for _, dep := range m.Dependencies() {
-			if !names[dep] {
-				panic(fmt.Errorf("missing dependency '%s' required by middleware '%s'", dep, m.Name()))
+		for _, is := range m.Contains() {
+			contains[is] = true
+		}
+		for _, dep := range m.Requires() {
+			if !contains[dep] {
+				panic(fmt.Errorf("missing dependency '%s'", dep))
 			}
 		}
-		names[m.Name()] = true
 	}
-	return Composite{append(([]Middleware)(nil), mdlw...)}
+	containsSlice := make([]string, 0)
+	for c, _ := range contains {
+		containsSlice = append(containsSlice, c)
+	}
+	return Composite{
+		middle:   append(([]Middleware)(nil), mdlw...),
+		contains: containsSlice,
+	}
+}
+
+func (c Composite) Contains() []string { return c.contains }
+func (c Composite) Requires() []string { return []string{} }
+func (c Composite) Handle(h Handler) Handler {
+	for i := len(c.middle) - 1; i >= 0; i-- {
+		h = c.middle[i].Handle(h)
+	}
+	return CompositeHandler{
+		h: h,
+	}
+}
+
+func (c Composite) With(mdlw ...Middleware) Composite {
+	return MustCompose(append([]Middleware{Middleware(c)}, mdlw...)...)
+}
+
+func (c Composite) Then(hf HandlerFunc) CompositeHandler {
+	return c.Handle(hf).(CompositeHandler)
+}
+func (c Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
+	return c.Handle(hf).(CompositeHandler)
 }
 
 type CompositeHandler struct {
@@ -40,17 +72,4 @@ func (ch CompositeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (ch CompositeHandler) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return ch.h.ServeHTTPContext(ctx, w, r)
-}
-
-func (c Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
-	return c.Then(hf)
-}
-
-func (c Composite) Then(h Handler) CompositeHandler {
-	for i := len(c.middle) - 1; i >= 0; i-- {
-		h = c.middle[i].Handle(h)
-	}
-	return CompositeHandler{
-		h: h,
-	}
 }
