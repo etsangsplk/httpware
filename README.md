@@ -32,8 +32,8 @@ func main() {
     // dependencies are not met.
     m := ctxware.MustCompose(
         errorware.New(),
-        logware.NewErrLogger(),
-        logware.NewReqLogger(),
+        logware.NewErrLogger(nil),
+        logware.NewReqLogger(nil),
         contentware.NewRespType(contentware.JsonAndXml),
     )
 
