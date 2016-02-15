@@ -9,15 +9,24 @@ import (
 	"golang.org/x/net/context"
 )
 
-type ReqLogger struct {
-	log *logrus.Logger
+var (
+	Defaults = Def{
+		Logger:  logrus.New(),
+		Headers: []string{},
+	}
+)
+
+type Def struct {
+	Logger  *logrus.Logger
+	Headers []string
 }
 
-func NewReqLogger(log *logrus.Logger) ReqLogger {
-	if log == nil {
-		log = logrus.New()
-	}
-	return ReqLogger{log}
+type ReqLogger struct {
+	def Def
+}
+
+func NewReqLogger(def Def) ReqLogger {
+	return ReqLogger{def}
 }
 
 func (rl ReqLogger) Name() string {
@@ -30,23 +39,24 @@ func (rl ReqLogger) Dependencies() []string {
 
 func (rl ReqLogger) Handle(next ctxware.Handler) ctxware.Handler {
 	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		rl.log.WithFields(logrus.Fields{
+		wf := rl.def.Logger.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
-		}).Info("serving request...")
+		})
+		for _, h := range rl.def.Headers {
+			wf = wf.WithField(h, r.Header.Get(h))
+		}
+		wf.Info("serving request...")
 		return next.ServeHTTPContext(ctx, w, r)
 	})
 }
 
 type ErrLogger struct {
-	log *logrus.Logger
+	def Def
 }
 
-func NewErrLogger(log *logrus.Logger) ErrLogger {
-	if log == nil {
-		log = logrus.New()
-	}
-	return ErrLogger{log}
+func NewErrLogger(def Def) ErrLogger {
+	return ErrLogger{def}
 }
 
 func (el ErrLogger) Name() string {
@@ -61,14 +71,14 @@ func (el ErrLogger) Handle(next ctxware.Handler) ctxware.Handler {
 	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			if httpErr, ok := err.(httperr.Err); ok {
-				el.log.WithFields(logrus.Fields{
+				el.def.Logger.WithFields(logrus.Fields{
 					"method": r.Method,
 					"error":  httpErr,
 				}).Info("request failed")
 				// Pass the http error along.
 				return httpErr
 			} else {
-				el.log.WithFields(logrus.Fields{
+				el.def.Logger.WithFields(logrus.Fields{
 					"method": r.Method,
 					"error": map[string]interface{}{
 						"statusCode": http.StatusInternalServerError,
