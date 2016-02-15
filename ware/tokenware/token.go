@@ -24,7 +24,7 @@ func (w Ware) Name() string {
 }
 
 func (w Ware) Dependencies() []string {
-	return []string{}
+	return []string{"errorware.Ware"}
 }
 
 func Token(ctx context.Context) *jwt.Token {
