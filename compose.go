@@ -7,17 +7,23 @@ import (
 	"golang.org/x/net/context"
 )
 
+// The Middleware interface serves as the building block for composing
+// http middleware.
 type Middleware interface {
 	Contains() []string
 	Requires() []string
 	Handle(Handler) Handler
 }
 
+// Composite is a collection of Middleware instances.
 type Composite struct {
 	middle   []Middleware
 	contains []string
 }
 
+// MustCompose takes multiple Middleware instances and checks for declared
+// dependencies, returning an instance of Composite. It will panic if any
+// dependencies are not met.
 func MustCompose(mdlw ...Middleware) Composite {
 	contains := make(map[string]bool)
 	for _, m := range mdlw {
@@ -51,17 +57,26 @@ func (c Composite) Handle(h Handler) Handler {
 	}
 }
 
+// With is a convenience method which in turn calls MustCompose, prepending
+// the current Composite as the first Middleware instance.
 func (c Composite) With(mdlw ...Middleware) Composite {
 	return MustCompose(append([]Middleware{Middleware(c)}, mdlw...)...)
 }
 
+// Then is used to call the final handler than will terminate the chain of
+// middleware.
 func (c Composite) Then(hf HandlerFunc) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
+
+// ThenFunc is a convenience method which calls the Then method.
 func (c Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
 
+// CompositeHandler implements the http.Handler interface, allowing it to be
+// used by functions such as http.ListenAndServe. It also implements the
+// ctxware.Handler interface.
 type CompositeHandler struct {
 	h Handler
 }
