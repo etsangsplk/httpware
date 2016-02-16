@@ -1,3 +1,7 @@
+/*
+Package routeradp provides a set of functions which enable using
+ctxware.Handler implementions with the httprouter package.
+*/
 package routeradp
 
 import (
