@@ -2,11 +2,11 @@
 **!!! Currently under heavy development !!!**
 
 #### DESCRIPTION
-This repository contains a collection of stackable middleware packages which aid in writing http handlers in Go. All handlers implement the following function:
+This repository contains a collection of stackable middleware packages which aid in writing http handlers in Go. It also includes a set of functions (inspired by [alice](https://github.com/justinas/alice)) which make composing middleware as simple as possible. All handlers implement the following function:
 ```Go
 ServeHTTPContext(context.Context, http.ResponseWriter, *http.Request) error
 ```
-It also includes a set of functions (inspired by [alice](https://github.com/justinas/alice)) which make composing middleware as simple as possible.
+This type of http handler was inspired by several Go blog posts: [net/context](https://blog.golang.org/context) and [error-handling](https://blog.golang.org/error-handling-and-go).
 
 #### MIDDLEWARE PACKAGES
 | Functionality | Package |
