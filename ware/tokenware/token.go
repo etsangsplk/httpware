@@ -1,3 +1,8 @@
+/*
+Package tokenware provides middleware for decoding & verifying Json Web Tokens
+(JWT's) from http requests. It implements the ctxware.Middleware interface for
+easy composition with other middleware.
+*/
 package tokenware
 
 import (

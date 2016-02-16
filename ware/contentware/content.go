@@ -1,3 +1,7 @@
+/*
+Package contentware provides http middleware for parsing content-types in http
+requests (using the Accept & Content-Type headers).
+*/
 package contentware
 
 import (

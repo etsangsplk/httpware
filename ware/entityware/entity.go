@@ -1,3 +1,7 @@
+/*
+Package entityware provides http middleware for parsing serialized entities
+into their Go datastructures. It uses the ctxware.Middleware interface.
+*/
 package entityware
 
 import (

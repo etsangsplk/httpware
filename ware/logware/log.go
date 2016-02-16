@@ -1,3 +1,7 @@
+/*
+Package logware provides http middleware for logging requests and errors. It
+is based on the ctxware.Middleware interface.
+*/
 package logware
 
 import (

@@ -1,3 +1,7 @@
+/*
+Package errorware provides middleware for handling errors in other
+ctxware.Handler implementations.
+*/
 package errorware
 
 import (
