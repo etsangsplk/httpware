@@ -1,4 +1,4 @@
-package ctxware
+package httpware
 
 // Registry of context keys
 const (

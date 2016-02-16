@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nstogner/ctxware"
+	"github.com/nstogner/httpware"
 
 	"golang.org/x/net/context"
 )
@@ -54,7 +54,7 @@ type ContentType struct {
 }
 
 func RequestTypeFromCtx(ctx context.Context) *ContentType {
-	ct := ctx.Value(ctxware.RequestContentTypeKey)
+	ct := ctx.Value(httpware.RequestContentTypeKey)
 	if ct == nil {
 		return nil
 	}
@@ -62,7 +62,7 @@ func RequestTypeFromCtx(ctx context.Context) *ContentType {
 }
 
 func ResponseTypeFromCtx(ctx context.Context) *ContentType {
-	ct := ctx.Value(ctxware.ResponseContentTypeKey)
+	ct := ctx.Value(httpware.ResponseContentTypeKey)
 	if ct == nil {
 		return nil
 	}
@@ -82,19 +82,14 @@ func NewReqType(types []*ContentType) ReqType {
 	}
 }
 
-func (rq ReqType) Contains() []string {
-	return []string{"contentware.ReqType"}
-}
+func (rq ReqType) Contains() []string { return []string{"contentware.ReqType"} }
+func (rq ReqType) Requires() []string { return []string{} }
 
-func (rq ReqType) Requires() []string {
-	return []string{}
-}
-
-func (rq ReqType) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (rq ReqType) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		reqContType := GetContentMatch(r.Header.Get("Content-Type"), rq.types)
 
-		newCtx := context.WithValue(ctx, ctxware.RequestContentTypeKey, reqContType)
+		newCtx := context.WithValue(ctx, httpware.RequestContentTypeKey, reqContType)
 		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
@@ -112,20 +107,15 @@ func NewRespType(types []*ContentType) RespType {
 	}
 }
 
-func (rp RespType) Contains() []string {
-	return []string{"contentware.RespType"}
-}
+func (rp RespType) Contains() []string { return []string{"contentware.RespType"} }
+func (rp RespType) Requires() []string { return []string{} }
 
-func (rp RespType) Requires() []string {
-	return []string{}
-}
-
-func (rp RespType) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (rp RespType) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		resContType := GetContentMatch(r.Header.Get("accept"), rp.types)
 
 		w.Header().Set("Content-Type", resContType.Value)
-		newCtx := context.WithValue(ctx, ctxware.ResponseContentTypeKey, resContType)
+		newCtx := context.WithValue(ctx, httpware.ResponseContentTypeKey, resContType)
 		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }

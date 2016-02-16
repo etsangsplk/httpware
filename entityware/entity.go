@@ -1,6 +1,6 @@
 /*
 Package entityware provides http middleware for parsing serialized entities
-into their Go datastructures. It uses the ctxware.Middleware interface.
+into their Go datastructures. It uses the httpware.Middleware interface.
 */
 package entityware
 
@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/lib/httperr"
-	"github.com/nstogner/ctxware/ware/contentware"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/contentware"
+	"github.com/nstogner/httpware/httperr"
 
 	"golang.org/x/net/context"
 )
@@ -24,7 +24,7 @@ const (
 )
 
 func EntityFromCtx(ctx context.Context) interface{} {
-	return ctx.Value(ctxware.EntityKey)
+	return ctx.Value(httpware.EntityKey)
 }
 
 // Parser
@@ -43,20 +43,15 @@ func NewParser(entity interface{}, maxSize int64) Parser {
 	}
 }
 
-func (p Parser) Contains() []string {
-	return []string{"entityware.Parser"}
-}
-
-func (p Parser) Requires() []string {
-	return []string{"contentware.ReqType"}
-}
+func (p Parser) Contains() []string { return []string{"entityware.Parser"} }
+func (p Parser) Requires() []string { return []string{"contentware.ReqType"} }
 
 func (p Parser) NewEntity() interface{} {
 	return reflect.New(p.reflectedType).Interface()
 }
 
-func (p Parser) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (p Parser) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, p.maxSize))
 		if err != nil {
 			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", p.maxSize)
@@ -69,7 +64,7 @@ func (p Parser) Handle(next ctxware.Handler) ctxware.Handler {
 			httperr.New("unable to parse body: "+err.Error(), http.StatusBadRequest)
 		}
 
-		newCtx := context.WithValue(ctx, ctxware.EntityKey, entity)
+		newCtx := context.WithValue(ctx, httpware.EntityKey, entity)
 		return next.ServeHTTPContext(newCtx, w, r)
 	})
 }
@@ -91,16 +86,11 @@ func NewValidator(vf ValidateFunc) Validator {
 	}
 }
 
-func (v Validator) Contains() []string {
-	return []string{"entityware.Validator"}
-}
+func (v Validator) Contains() []string { return []string{"entityware.Validator"} }
+func (v Validator) Requires() []string { return []string{"entityware.Parser"} }
 
-func (v Validator) Requires() []string {
-	return []string{"entityware.Parser"}
-}
-
-func (v Validator) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (v Validator) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		e := EntityFromCtx(ctx)
 
 		if err := v.validate(e); err != nil {

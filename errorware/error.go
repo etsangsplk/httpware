@@ -1,15 +1,15 @@
 /*
 Package errorware provides middleware for handling errors in other
-ctxware.Handler implementations.
+httpware.Handler implementations.
 */
 package errorware
 
 import (
 	"net/http"
 
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/lib/httperr"
-	"github.com/nstogner/ctxware/ware/contentware"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/contentware"
+	"github.com/nstogner/httpware/httperr"
 
 	"golang.org/x/net/context"
 )
@@ -21,16 +21,11 @@ func New() Ware {
 	return Ware{}
 }
 
-func (w Ware) Contains() []string {
-	return []string{"errorware.Ware"}
-}
+func (w Ware) Contains() []string { return []string{"errorware.Ware"} }
+func (w Ware) Requires() []string { return []string{} }
 
-func (w Ware) Requires() []string {
-	return []string{}
-}
-
-func (w Ware) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (w Ware) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			w.Header().Set("X-Content-Type-Options", "nosniff")
 

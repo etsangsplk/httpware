@@ -1,4 +1,4 @@
-package ctxware
+package httpware
 
 import (
 	"fmt"
@@ -76,7 +76,7 @@ func (c Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
 
 // CompositeHandler implements the http.Handler interface, allowing it to be
 // used by functions such as http.ListenAndServe. It also implements the
-// ctxware.Handler interface.
+// httpware.Handler interface.
 type CompositeHandler struct {
 	h Handler
 }

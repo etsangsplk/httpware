@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware"
+	"github.com/nstogner/httpware"
 
 	"golang.org/x/net/context"
 )
@@ -16,12 +16,12 @@ type user struct {
 }
 
 func TestRequest(t *testing.T) {
-	c := ctxware.MustCompose(
+	c := httpware.MustCompose(
 		NewReqType(JsonAndXml),
 	)
 	s := httptest.NewServer(
 		c.Then(
-			ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				ct := RequestTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":
@@ -65,12 +65,12 @@ func TestRequest(t *testing.T) {
 }
 
 func TestResponse(t *testing.T) {
-	c := ctxware.MustCompose(
+	c := httpware.MustCompose(
 		NewRespType(JsonAndXml),
 	)
 	s := httptest.NewServer(
 		c.Then(
-			ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				ct := ResponseTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":

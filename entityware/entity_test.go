@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/ware/contentware"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/contentware"
 
 	"golang.org/x/net/context"
 )
@@ -18,14 +18,14 @@ type user struct {
 }
 
 func TestParser(t *testing.T) {
-	c := ctxware.MustCompose(
+	c := httpware.MustCompose(
 		contentware.NewReqType(contentware.JsonAndXml),
 		NewParser(user{}, MAX),
 	)
 
 	s := httptest.NewServer(
 		c.Then(
-			ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				u := EntityFromCtx(ctx).(*user)
 				if u.Id != 123 {
 					t.Fatal("expected user id to equal 123")

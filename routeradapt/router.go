@@ -1,33 +1,33 @@
 /*
-Package routeradp provides a set of functions which enable using
-ctxware.Handler implementions with the httprouter package.
+Package routeradapt provides a set of functions which enable using
+httpware.Handler implementions with the httprouter package.
 */
-package routeradp
+package routeradapt
 
 import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/ctxware"
+	"github.com/nstogner/httpware"
 	"golang.org/x/net/context"
 )
 
 // Adapt calls the AdaptFunc function.
-func Adapt(h ctxware.Handler) httprouter.Handle {
+func Adapt(h httpware.Handler) httprouter.Handle {
 	return AdaptFunc(h.ServeHTTPContext)
 }
 
-// AdaptFunc can be the starting point for ctxware.Handler implementations. It
+// AdaptFunc can be the starting point for httpware.Handler implementations. It
 // creates a new background context and invokes the ServeHTTPContext function.
-func AdaptFunc(hf ctxware.HandlerFunc) httprouter.Handle {
+func AdaptFunc(hf httpware.HandlerFunc) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ctx := context.Background()
-		paramsCtx := context.WithValue(ctx, ctxware.RouterParamsKey, ps)
+		paramsCtx := context.WithValue(ctx, httpware.RouterParamsKey, ps)
 		hf.ServeHTTPContext(paramsCtx, w, r)
 	}
 }
 
 // ParamsFromCtx retreives the httprouter.Params that are set by httprouter.
 func ParamsFromCtx(ctx context.Context) httprouter.Params {
-	return ctx.Value(ctxware.RouterParamsKey).(httprouter.Params)
+	return ctx.Value(httpware.RouterParamsKey).(httprouter.Params)
 }

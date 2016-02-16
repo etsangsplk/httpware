@@ -5,19 +5,19 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/lib/httperr"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httperr"
 
 	"golang.org/x/net/context"
 )
 
 func TestHandle(t *testing.T) {
-	c := ctxware.MustCompose(
+	c := httpware.MustCompose(
 		New(),
 	)
 	s := httptest.NewServer(
 		c.Then(
-			ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				err := httperr.Err{
 					StatusCode: http.StatusBadRequest,
 					Message:    "better luck next time",

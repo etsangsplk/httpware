@@ -1,6 +1,6 @@
 /*
 Package logware provides http middleware for logging requests and errors. It
-is based on the ctxware.Middleware interface.
+is based on the httpware.Middleware interface.
 */
 package logware
 
@@ -8,8 +8,8 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/lib/httperr"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httperr"
 	"golang.org/x/net/context"
 )
 
@@ -64,16 +64,11 @@ func NewReqLogger(def Def) ReqLogger {
 	return ReqLogger{def}
 }
 
-func (rl ReqLogger) Contains() []string {
-	return []string{"logware.ReqLogger"}
-}
+func (rl ReqLogger) Contains() []string { return []string{"logware.ReqLogger"} }
+func (rl ReqLogger) Requires() []string { return []string{} }
 
-func (rl ReqLogger) Requires() []string {
-	return []string{}
-}
-
-func (rl ReqLogger) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (rl ReqLogger) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		wf := rl.def.Logger.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
@@ -96,16 +91,11 @@ func NewErrLogger(def Def) ErrLogger {
 	return ErrLogger{def}
 }
 
-func (el ErrLogger) Contains() []string {
-	return []string{"logware.ErrLogger"}
-}
+func (el ErrLogger) Contains() []string { return []string{"logware.ErrLogger"} }
+func (el ErrLogger) Requires() []string { return []string{} }
 
-func (el ErrLogger) Requires() []string {
-	return []string{}
-}
-
-func (el ErrLogger) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (el ErrLogger) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			wf := el.def.Logger.WithFields(logrus.Fields{
 				"method": r.Method,

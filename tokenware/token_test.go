@@ -6,15 +6,15 @@ import (
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/ware/errorware"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/errorware"
 
 	"golang.org/x/net/context"
 )
 
 func TestWare(t *testing.T) {
 	secret := []byte("shh")
-	m := ctxware.MustCompose(
+	m := httpware.MustCompose(
 		errorware.New(),
 		New(secret),
 	)

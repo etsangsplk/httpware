@@ -1,6 +1,6 @@
 /*
 Package tokenware provides middleware for decoding & verifying Json Web Tokens
-(JWT's) from http requests. It implements the ctxware.Middleware interface for
+(JWT's) from http requests. It implements the httpware.Middleware interface for
 easy composition with other middleware.
 */
 package tokenware
@@ -9,8 +9,8 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/nstogner/ctxware"
-	"github.com/nstogner/ctxware/lib/httperr"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httperr"
 	"golang.org/x/net/context"
 )
 
@@ -24,20 +24,15 @@ func New(secret interface{}) Ware {
 	}
 }
 
-func (w Ware) Contains() []string {
-	return []string{"tokenware.Ware"}
-}
-
-func (w Ware) Requires() []string {
-	return []string{"errorware.Ware"}
-}
+func (w Ware) Contains() []string { return []string{"tokenware.Ware"} }
+func (w Ware) Requires() []string { return []string{"errorware.Ware"} }
 
 func TokenFromCtx(ctx context.Context) *jwt.Token {
-	return ctx.Value(ctxware.TokenKey).(*jwt.Token)
+	return ctx.Value(httpware.TokenKey).(*jwt.Token)
 }
 
-func (ware Ware) Handle(next ctxware.Handler) ctxware.Handler {
-	return ctxware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (ware Ware) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		token, err := jwt.ParseFromRequest(
 			r,
 			func(token *jwt.Token) (interface{}, error) {
@@ -46,7 +41,7 @@ func (ware Ware) Handle(next ctxware.Handler) ctxware.Handler {
 		)
 
 		if err == nil && token.Valid {
-			newCtx := context.WithValue(ctx, ctxware.TokenKey, token)
+			newCtx := context.WithValue(ctx, httpware.TokenKey, token)
 			return next.ServeHTTPContext(newCtx, w, r)
 		} else {
 			return httperr.New("invalid token", http.StatusUnauthorized)
