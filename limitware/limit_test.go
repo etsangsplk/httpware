@@ -45,9 +45,7 @@ func TestRate(t *testing.T) {
 				t.Fatalf("expected status code %v, got %v", 429, resp.StatusCode)
 			}
 		} else {
-			go func() {
-				http.Get(s.URL + "/delay")
-			}()
+			go http.Get(s.URL + "/delay")
 		}
 	}
 }
