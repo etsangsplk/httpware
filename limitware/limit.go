@@ -7,6 +7,7 @@ package limitware
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/nstogner/httpware"
@@ -36,18 +37,27 @@ func (w Rate) Requires() []string { return []string{"errorware.Ware"} }
 
 func (ware Rate) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		defer ware.decrement(r.RemoteAddr)
-		if !ware.increment(r.RemoteAddr) {
-			return httperr.New("exceeded request rate limit", 429)
+		remote := strings.Split(r.RemoteAddr, ":")
+		if len(remote) != 2 {
+			return next.ServeHTTPContext(ctx, w, r)
 		}
-		return next.ServeHTTPContext(ctx, w, r)
+
+		if ware.increment(remote[0]) {
+			defer ware.decrement(remote[0])
+			return next.ServeHTTPContext(ctx, w, r)
+		}
+		return httperr.New("exceeded request rate limit", 429)
 	})
 }
 
 func (ware *Rate) increment(addr string) bool {
 	ware.addrsMutex.Lock()
 	defer ware.addrsMutex.Unlock()
-	return (ware.addrs[addr] >= ware.limit)
+	if ware.addrs[addr] < ware.limit {
+		ware.addrs[addr]++
+		return true
+	}
+	return false
 }
 func (ware *Rate) decrement(addr string) {
 	ware.addrsMutex.Lock()

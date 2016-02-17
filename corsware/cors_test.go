@@ -1,7 +1,6 @@
 package corsware
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,10 +25,9 @@ func TestWare(t *testing.T) {
 		t.Fatal(err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
-		t.Fatalf("expected status code %v, got %v", http.StatusUnauthorized, resp.StatusCode)
+		t.Fatalf("expected status code %v, got %v", http.StatusNoContent, resp.StatusCode)
 	}
 	if resp.Header.Get("Access-Control-Allow-Origin") != "*" {
 		t.Fatal("expected Access-Control-Allow-Origin header to be set to '*'")
 	}
-	fmt.Println(resp.Header)
 }
