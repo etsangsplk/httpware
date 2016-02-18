@@ -54,6 +54,8 @@ func (def *Def) predefine() {
 	}
 }
 
+// ReqLogger logs each request as it comes in. It does not wait for the
+// response to be sent.
 type ReqLogger struct {
 	def Def
 }
@@ -81,6 +83,7 @@ func (rl ReqLogger) Handle(next httpware.Handler) httpware.Handler {
 	})
 }
 
+// ErrLogger logs each error that is returned by the downstream handler.
 type ErrLogger struct {
 	def Def
 }

@@ -1,3 +1,8 @@
+/*
+Package httperr provides a standardized error that can be returned by handlers.
+It includes all info that would be included in a call to http.Error with the
+optional addition of arbitrary fields.
+*/
 package httperr
 
 type Err struct {
