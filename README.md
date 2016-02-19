@@ -18,7 +18,7 @@ This type of http handler was inspired by several Go blog posts: [net/context](h
 | Unmarshalling (json/xml) and validating entities | entityware |
 | Handling errors | errorware |
 | Limiting requests | limitware |
-| Logging ([logrus](https://github.com/Sirupsen/logrus)) errors and requests | logware |
+| Logging ([logrus](https://github.com/Sirupsen/logrus)) | logware |
 | JWT authentication ([jwt-go](https://github.com/dgrijalva/jwt-go)) | tokenware |
 
 #### OTHER PACKAGES
@@ -39,8 +39,7 @@ func main() {
     // dependencies are not met.
     m := httpware.MustCompose(
         errorware.New(),
-        logware.NewErrLogger(logware.Defaults),
-        logware.NewReqLogger(logware.Defaults),
+        logware.New(logware.Defaults),
         contentware.NewRespType(contentware.JsonAndXml),
     )
 
@@ -68,7 +67,7 @@ Middleware can be chained into composites:
 ```go
     m1 := httpware.MustCompose(
         errorware.New(),
-        logware.NewErrLogger(logware.Defaults),
+        logware.New(logware.Defaults),
     )
 ```
 Composites can be further chained:
@@ -86,7 +85,7 @@ Middleware can be adapted for use with different routers. For example, httproute
 main() {
     m := httpware.MustCompose(
         errorware.New(),
-        logware.NewErrLogger(logware.Defaults),
+        logware.New(logware.Defaults),
     )
     r := httprouter.New()
     r.GET("/users/:id", routeradapt.Adapt(m.Then(handle))

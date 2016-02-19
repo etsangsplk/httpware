@@ -27,101 +27,67 @@ type Def struct {
 	Headers    []string
 	Referer    bool
 	RemoteAddr bool
-
-	headers    logFunc
-	referer    logFunc
-	remoteaddr logFunc
-}
-
-type logFunc func(e *logrus.Entry, r *http.Request) *logrus.Entry
-
-func (def *Def) predefine() {
-	if def.Referer {
-		def.referer = func(e *logrus.Entry, r *http.Request) *logrus.Entry { return e.WithField("referer", r.Referer()) }
-	} else {
-		def.referer = func(e *logrus.Entry, r *http.Request) *logrus.Entry { return e }
-	}
-	if def.RemoteAddr {
-		def.remoteaddr = func(e *logrus.Entry, r *http.Request) *logrus.Entry { return e.WithField("remoteAddr", r.RemoteAddr) }
-	} else {
-		def.remoteaddr = func(e *logrus.Entry, r *http.Request) *logrus.Entry { return e }
-	}
-	def.headers = func(e *logrus.Entry, r *http.Request) *logrus.Entry {
-		for _, h := range def.Headers {
-			e = e.WithField(h, r.Header.Get(h))
-		}
-		return e
-	}
-}
-
-// ReqLogger logs each request as it comes in. It does not wait for the
-// response to be sent.
-type ReqLogger struct {
-	def Def
-}
-
-func NewReqLogger(def Def) ReqLogger {
-	// Predefine functions so that if-then logic is not needed in handler.
-	def.predefine()
-	return ReqLogger{def}
-}
-
-func (rl ReqLogger) Contains() []string { return []string{"logware.ReqLogger"} }
-func (rl ReqLogger) Requires() []string { return []string{} }
-
-func (rl ReqLogger) Handle(next httpware.Handler) httpware.Handler {
-	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		wf := rl.def.Logger.WithFields(logrus.Fields{
-			"method": r.Method,
-			"path":   r.URL.Path,
-		})
-		wf = rl.def.referer(wf, r)
-		wf = rl.def.remoteaddr(wf, r)
-		wf = rl.def.headers(wf, r)
-		wf.Info("serving request...")
-		return next.ServeHTTPContext(ctx, w, r)
-	})
 }
 
 // ErrLogger logs each error that is returned by the downstream handler.
-type ErrLogger struct {
+type Logger struct {
 	def Def
 }
 
-func NewErrLogger(def Def) ErrLogger {
-	// Predefine functions so that if-then logic is not needed in handler.
-	def.predefine()
-	return ErrLogger{def}
+func New(def Def) Logger {
+	return Logger{def}
 }
 
-func (el ErrLogger) Contains() []string { return []string{"logware.ErrLogger"} }
-func (el ErrLogger) Requires() []string { return []string{} }
+func (l Logger) Contains() []string { return []string{"logware.ErrLogger"} }
+func (l Logger) Requires() []string { return []string{} }
 
-func (el ErrLogger) Handle(next httpware.Handler) httpware.Handler {
+func (l Logger) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
-			wf := el.def.Logger.WithFields(logrus.Fields{
-				"method": r.Method,
-				"path":   r.URL.Path,
-			})
-			wf = el.def.referer(wf, r)
-			wf = el.def.remoteaddr(wf, r)
-			wf = el.def.headers(wf, r)
+		// Call downstream handlers.
+		err := next.ServeHTTPContext(ctx, w, r)
+
+		// Always log the method and path.
+		entry := l.def.Logger.WithFields(logrus.Fields{
+			"method": r.Method,
+			"path":   r.URL.Path,
+		})
+
+		// Conditional logging...
+		if l.def.Referer {
+			entry = entry.WithField("referer", r.Referer())
+		}
+		if l.def.RemoteAddr {
+			entry = entry.WithField("remoteAddr", r.RemoteAddr)
+		}
+		for _, h := range l.def.Headers {
+			entry = entry.WithField(h, r.Header.Get(h))
+		}
+
+		// Add any errors to the log entry.
+		logAsError := false
+		if err != nil {
 			if httpErr, ok := err.(httperr.Err); ok {
-				wf.WithField("error", httpErr).Info("request failed")
-				// Pass the http error along.
-				return httpErr
+				entry.WithField("error", httpErr)
+				if httpErr.StatusCode >= 500 {
+					logAsError = true
+				}
 			} else {
-				wf.WithField("error",
+				entry.WithField("error",
 					map[string]interface{}{
 						"statusCode": http.StatusInternalServerError,
 						"message":    err,
 					},
-				).Info("request failed")
-				// Pass the error along.
-				return err
+				)
+				logAsError = true
 			}
 		}
-		return nil
+
+		// Log with the right level and pass on the error.
+		if logAsError {
+			entry.Error("failed to serve request")
+		} else {
+			entry.Info("served request")
+		}
+		return err
 	})
 }

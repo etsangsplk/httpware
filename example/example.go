@@ -16,8 +16,7 @@ func main() {
 	// dependencies are not met.
 	m := httpware.MustCompose(
 		errorware.New(),
-		logware.NewErrLogger(logware.Defaults),
-		logware.NewReqLogger(logware.Defaults),
+		logware.New(logware.Defaults),
 		contentware.NewRespType(contentware.JsonAndXml),
 	)
 
