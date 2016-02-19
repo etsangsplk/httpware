@@ -17,10 +17,13 @@ type user struct {
 	Name string `json:"name"`
 }
 
-func TestParser(t *testing.T) {
+func TestParsing(t *testing.T) {
 	c := httpware.MustCompose(
 		contentware.NewReqType(contentware.JsonAndXml),
-		NewParser(user{}, MAX),
+		New(Def{
+			Entity:      user{},
+			MaxBodySize: MAX,
+		}),
 	)
 
 	s := httptest.NewServer(
@@ -44,3 +47,5 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// TODO: TestValidate
