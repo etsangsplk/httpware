@@ -34,18 +34,19 @@ type Def struct {
 }
 
 type Ware struct {
-	allowOrigin       string
-	allowCredentials  string
-	exposeHeadersFunc func(w http.ResponseWriter)
+	allowOrigin         string
+	allowCredentials    string
+	exposeHeaders       string
+	shouldExposeHeaders bool
 }
 
 func New(def Def) Ware {
-	w := &Ware{
-		allowOrigin:      def.AllowOrigin,
-		allowCredentials: strconv.FormatBool(def.AllowCredentials),
+	return Ware{
+		allowOrigin:         def.AllowOrigin,
+		allowCredentials:    strconv.FormatBool(def.AllowCredentials),
+		exposeHeaders:       strings.Join(def.ExposeHeaders, ", "),
+		shouldExposeHeaders: (len(def.ExposeHeaders) > 0),
 	}
-	w.defineFuncs(def)
-	return *w
 }
 
 func (w Ware) Contains() []string { return []string{"corsware.Ware"} }
@@ -55,21 +56,9 @@ func (ware Ware) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("Access-Control-Allow-Origin", ware.allowOrigin)
 		w.Header().Set("Access-Control-Allow-Credentials", ware.allowCredentials)
-		ware.exposeHeadersFunc(w)
+		if ware.shouldExposeHeaders {
+			w.Header().Set("Access-Control-Expose-Headers", ware.exposeHeaders)
+		}
 		return next.ServeHTTPContext(ctx, w, r)
 	})
-}
-
-// defineFuncs defines closures to be called in the handle func. This is done so
-// that control logic will not be needed when the handler is serving each
-// request.
-func (ware *Ware) defineFuncs(def Def) {
-	exposeHeaders := strings.Join(def.ExposeHeaders, ", ")
-	if len(def.ExposeHeaders) > 0 {
-		ware.exposeHeadersFunc = func(w http.ResponseWriter) {
-			w.Header().Set("Access-Control-Expose-Headers", exposeHeaders)
-		}
-	} else {
-		ware.exposeHeadersFunc = func(w http.ResponseWriter) {}
-	}
 }
