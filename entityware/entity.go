@@ -28,9 +28,12 @@ func EntityFromCtx(ctx context.Context) interface{} {
 }
 
 type Def struct {
+	// MaxBodySize is the maximum request body (bytes) that will be accepted.
 	MaxBodySize int64
-	Entity      interface{}
-	Validate    ValidateFunc
+	// Entity is a non-pointer instance of the expected entity.
+	Entity interface{}
+	// If left nil, Validate will not be called.
+	Validate ValidateFunc
 }
 
 type ValidateFunc func(interface{}) error
@@ -50,6 +53,7 @@ func New(def Def) Ware {
 func (ware Ware) Contains() []string { return []string{"entityware.Ware"} }
 func (ware Ware) Requires() []string { return []string{"contentware.ReqType"} }
 
+// NewEnitity returns a pointer to the new instance of an entity.
 func (ware Ware) NewEntity() interface{} {
 	return reflect.New(ware.reflectedType).Interface()
 }
@@ -61,6 +65,7 @@ func (ware Ware) Handle(next httpware.Handler) httpware.Handler {
 			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", ware.def.MaxBodySize)
 		}
 
+		// Pointer to a new instance of the entity
 		entity := ware.NewEntity()
 
 		// Unmarshal the body based on the content type that was determined.
