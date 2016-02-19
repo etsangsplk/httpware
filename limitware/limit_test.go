@@ -12,11 +12,14 @@ import (
 	"golang.org/x/net/context"
 )
 
-func TestRate(t *testing.T) {
-	rateLimit := 3
+func TestRemoteLimit(t *testing.T) {
+	def := Def{
+		RemoteLimit: 3,
+		TotalLimit:  10,
+	}
 	m := httpware.MustCompose(
 		errorware.New(),
-		NewRate(rateLimit),
+		NewReqLimit(def),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if r.URL.Path == "/delay" {
@@ -33,8 +36,8 @@ func TestRate(t *testing.T) {
 		t.Fatalf("expected status code %v, got %v", 200, resp.StatusCode)
 	}
 
-	for i := 1; i <= rateLimit+1; i++ {
-		if i == rateLimit+1 {
+	for i := 1; i <= def.RemoteLimit+1; i++ {
+		if i == def.RemoteLimit+1 {
 			// Sleep for 100ms to make sure the other requests have reached the middleware.
 			time.Sleep(100 * time.Millisecond)
 			resp, err := http.Get(s.URL)
@@ -49,3 +52,5 @@ func TestRate(t *testing.T) {
 		}
 	}
 }
+
+// TODO: TestTotalLimit
