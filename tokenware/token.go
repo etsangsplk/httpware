@@ -14,29 +14,29 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Ware struct {
+type Middle struct {
 	secret interface{}
 }
 
-func New(secret interface{}) Ware {
-	return Ware{
+func New(secret interface{}) Middle {
+	return Middle{
 		secret: secret,
 	}
 }
 
-func (w Ware) Contains() []string { return []string{"tokenware.Ware"} }
-func (w Ware) Requires() []string { return []string{"errorware.Ware"} }
+func (m Middle) Contains() []string { return []string{"tokenware"} }
+func (m Middle) Requires() []string { return []string{"errorware"} }
 
 func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(httpware.TokenKey).(*jwt.Token)
 }
 
-func (ware Ware) Handle(next httpware.Handler) httpware.Handler {
+func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		token, err := jwt.ParseFromRequest(
 			r,
 			func(token *jwt.Token) (interface{}, error) {
-				return ware.secret, nil
+				return m.secret, nil
 			},
 		)
 

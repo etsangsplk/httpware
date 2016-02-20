@@ -14,17 +14,17 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Ware struct {
+type Middle struct {
 }
 
-func New() Ware {
-	return Ware{}
+func New() Middle {
+	return Middle{}
 }
 
-func (w Ware) Contains() []string { return []string{"errorware.Ware"} }
-func (w Ware) Requires() []string { return []string{} }
+func (m Middle) Contains() []string { return []string{"errorware"} }
+func (m Middle) Requires() []string { return []string{} }
 
-func (w Ware) Handle(next httpware.Handler) httpware.Handler {
+func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {
 			w.Header().Set("X-Content-Type-Options", "nosniff")

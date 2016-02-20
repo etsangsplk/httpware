@@ -72,11 +72,11 @@ Middleware can be chained into composites:
 ```
 Composites can be further chained:
 ```go
-    m2 := httpware.MustCompose(m1, contentware.NewRespType(contentware.JsonAndXml))
+    m2 := httpware.MustCompose(m1, contentware.New(contentware.Defaults))
 ```
 ... which is equivalent to:
 ```go
-    m2 := m1.With(contentware.NewRespType(contentware.JsonAndXml))
+    m2 := m1.With(contentware.New(contentware.Defaults))
 ```
 
 #### ADAPTORS

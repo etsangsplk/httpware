@@ -17,14 +17,14 @@ import (
 )
 
 var (
-	Defaults = Def{
+	Defaults = Config{
 		RemoteLimit: 100,
 		TotalLimit:  1000000,
 		RetryAfter:  3600,
 	}
 )
 
-type Def struct {
+type Config struct {
 	// The number of active requests a single remote address can have
 	RemoteLimit int
 	// The limit of total active requests
@@ -33,7 +33,7 @@ type Def struct {
 	RetryAfter int
 }
 
-type ReqLimit struct {
+type Middle struct {
 	remoteLimit int
 	totalLimit  uint64
 
@@ -47,66 +47,66 @@ type ReqLimit struct {
 // New creates a new Rate httpware.Middleware instance. The limit is the max
 // number of requests that a single remote address can have open. It applies
 // to any handlers downstream from this middleware.
-func NewReqLimit(def Def) ReqLimit {
-	rl := ReqLimit{
-		remoteLimit: def.RemoteLimit,
+func New(conf Config) Middle {
+	middle := Middle{
+		remoteLimit: conf.RemoteLimit,
 		addrs:       make(map[string]int),
-		totalLimit:  def.TotalLimit,
+		totalLimit:  conf.TotalLimit,
 	}
-	if def.RetryAfter == 0 {
-		headerValue := strconv.Itoa(def.RetryAfter)
-		rl.retryHeader = func(w http.ResponseWriter) { w.Header().Set("Retry-After", headerValue) }
+	if conf.RetryAfter == 0 {
+		headerValue := strconv.Itoa(conf.RetryAfter)
+		middle.retryHeader = func(w http.ResponseWriter) { w.Header().Set("Retry-After", headerValue) }
 	} else {
-		rl.retryHeader = func(w http.ResponseWriter) {}
+		middle.retryHeader = func(w http.ResponseWriter) {}
 	}
-	return rl
+	return middle
 }
 
-func (w ReqLimit) Contains() []string { return []string{"limitware.Rate"} }
-func (w ReqLimit) Requires() []string { return []string{"errorware.Ware"} }
+func (m Middle) Contains() []string { return []string{"limitware", "limitware/requests"} }
+func (m Middle) Requires() []string { return []string{"errorware"} }
 
-func (rl ReqLimit) Handle(next httpware.Handler) httpware.Handler {
+func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		remote := strings.Split(r.RemoteAddr, ":")
 		if len(remote) != 2 {
 			return next.ServeHTTPContext(ctx, w, r)
 		}
 
-		if rl.increment(remote[0]) {
-			defer rl.decrement(remote[0])
+		if m.increment(remote[0]) {
+			defer m.decrement(remote[0])
 			return next.ServeHTTPContext(ctx, w, r)
 		}
 
 		// Send a 429 response (Too Many Requests).
-		rl.retryHeader(w)
+		m.retryHeader(w)
 		return httperr.New("exceeded request rate limit", 429)
 	})
 }
 
 // TotalRate gets the total number of active requests.
-func (rl *ReqLimit) TotalRate() uint64 {
-	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
-	return rl.total
+func (m *Middle) TotalRate() uint64 {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	return m.total
 }
 
-func (rl *ReqLimit) increment(addr string) bool {
-	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
-	if rl.addrs[addr] < rl.remoteLimit && rl.total < rl.totalLimit {
-		rl.addrs[addr]++
-		rl.total++
+func (m *Middle) increment(addr string) bool {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if m.addrs[addr] < m.remoteLimit && m.total < m.totalLimit {
+		m.addrs[addr]++
+		m.total++
 		return true
 	}
 	return false
 }
-func (rl *ReqLimit) decrement(addr string) {
-	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
-	if rl.addrs[addr] <= 1 {
-		delete(rl.addrs, addr)
+func (m *Middle) decrement(addr string) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if m.addrs[addr] <= 1 {
+		delete(m.addrs, addr)
 	} else {
-		rl.addrs[addr]--
+		m.addrs[addr]--
 	}
-	rl.total--
+	m.total--
 }

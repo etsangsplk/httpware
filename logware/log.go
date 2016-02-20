@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	Defaults = Def{
+	Defaults = Config{
 		Logger:     logrus.New(),
 		Headers:    []string{},
 		Referer:    false,
@@ -22,44 +22,44 @@ var (
 	}
 )
 
-type Def struct {
+type Config struct {
 	Logger     *logrus.Logger
 	Headers    []string
 	Referer    bool
 	RemoteAddr bool
 }
 
-// ErrLogger logs each error that is returned by the downstream handler.
-type Logger struct {
-	def Def
+// logware.Middle logs each error that is returned by the downstream handler.
+type Middle struct {
+	conf Config
 }
 
-func New(def Def) Logger {
-	return Logger{def}
+func New(conf Config) Middle {
+	return Middle{conf}
 }
 
-func (l Logger) Contains() []string { return []string{"logware.ErrLogger"} }
-func (l Logger) Requires() []string { return []string{} }
+func (m Middle) Contains() []string { return []string{"logware"} }
+func (m Middle) Requires() []string { return []string{} }
 
-func (l Logger) Handle(next httpware.Handler) httpware.Handler {
+func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		// Call downstream handlers.
 		err := next.ServeHTTPContext(ctx, w, r)
 
 		// Always log the method and path.
-		entry := l.def.Logger.WithFields(logrus.Fields{
+		entry := m.conf.Logger.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
 		})
 
 		// Conditional logging...
-		if l.def.Referer {
+		if m.conf.Referer {
 			entry = entry.WithField("referer", r.Referer())
 		}
-		if l.def.RemoteAddr {
+		if m.conf.RemoteAddr {
 			entry = entry.WithField("remoteAddr", r.RemoteAddr)
 		}
-		for _, h := range l.def.Headers {
+		for _, h := range m.conf.Headers {
 			entry = entry.WithField(h, r.Header.Get(h))
 		}
 

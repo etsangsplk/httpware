@@ -13,13 +13,13 @@ import (
 )
 
 func TestRemoteLimit(t *testing.T) {
-	def := Def{
+	def := Config{
 		RemoteLimit: 3,
 		TotalLimit:  10,
 	}
 	m := httpware.MustCompose(
 		errorware.New(),
-		NewReqLimit(def),
+		New(def),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if r.URL.Path == "/delay" {

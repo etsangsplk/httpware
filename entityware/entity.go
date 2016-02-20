@@ -27,7 +27,7 @@ func EntityFromCtx(ctx context.Context) interface{} {
 	return ctx.Value(httpware.EntityKey)
 }
 
-type Def struct {
+type Config struct {
 	// MaxBodySize is the maximum request body (bytes) that will be accepted.
 	MaxBodySize int64
 	// Entity is a non-pointer instance of the expected entity.
@@ -38,35 +38,35 @@ type Def struct {
 
 type ValidateFunc func(interface{}) error
 
-type Ware struct {
-	def           Def
+type Middle struct {
+	conf          Config
 	reflectedType reflect.Type
 }
 
-func New(def Def) Ware {
-	return Ware{
-		def:           def,
-		reflectedType: reflect.TypeOf(def.Entity),
+func New(conf Config) Middle {
+	return Middle{
+		conf:          conf,
+		reflectedType: reflect.TypeOf(conf.Entity),
 	}
 }
 
-func (ware Ware) Contains() []string { return []string{"entityware.Ware"} }
-func (ware Ware) Requires() []string { return []string{"contentware.ReqType"} }
+func (m Middle) Contains() []string { return []string{"entityware"} }
+func (m Middle) Requires() []string { return []string{"contentware/requests"} }
 
 // NewEnitity returns a pointer to the new instance of an entity.
-func (ware Ware) NewEntity() interface{} {
-	return reflect.New(ware.reflectedType).Interface()
+func (m Middle) NewEntity() interface{} {
+	return reflect.New(m.reflectedType).Interface()
 }
 
-func (ware Ware) Handle(next httpware.Handler) httpware.Handler {
+func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, ware.def.MaxBodySize))
+		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, m.conf.MaxBodySize))
 		if err != nil {
-			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", ware.def.MaxBodySize)
+			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", m.conf.MaxBodySize)
 		}
 
 		// Pointer to a new instance of the entity
-		entity := ware.NewEntity()
+		entity := m.NewEntity()
 
 		// Unmarshal the body based on the content type that was determined.
 		ct := contentware.RequestTypeFromCtx(ctx)
@@ -75,8 +75,8 @@ func (ware Ware) Handle(next httpware.Handler) httpware.Handler {
 		}
 
 		// Validate the entity if the validate function was defined.
-		if ware.def.Validate != nil {
-			if err := ware.def.Validate(entity); err != nil {
+		if m.conf.Validate != nil {
+			if err := m.conf.Validate(entity); err != nil {
 				return httperr.New(err.Error(), http.StatusBadRequest)
 			}
 		}

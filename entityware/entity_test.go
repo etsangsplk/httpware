@@ -20,7 +20,7 @@ type user struct {
 func TestParsing(t *testing.T) {
 	c := httpware.MustCompose(
 		contentware.New(contentware.Defaults),
-		New(Def{
+		New(Config{
 			Entity:      user{},
 			MaxBodySize: MAX,
 		}),

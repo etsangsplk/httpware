@@ -82,48 +82,49 @@ func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 // contentware.Ware is middleware that parses content types. The 'Content-Type'
 // header is inspected for determining the request content type. The 'Accept'
 // header is parsed for determined the appropriate response content type.
-type Ware struct {
-	def Config
+type Middle struct {
+	conf Config
 
 	determineReqType  bool
 	determineRespType bool
 }
 
 // New creates a new instance of the middleware.
-func New(def Config) Ware {
-	ware := Ware{
-		def: def,
+func New(conf Config) Middle {
+	middle := Middle{
+		conf: conf,
 	}
-	if len(def.RequestTypes) > 0 {
-		ware.determineReqType = true
+	if len(conf.RequestTypes) > 0 {
+		middle.determineReqType = true
 	}
-	if len(def.ResponseTypes) > 0 {
-		ware.determineRespType = true
+	if len(conf.ResponseTypes) > 0 {
+		middle.determineRespType = true
 	}
-	return ware
+	return middle
 }
 
 // Contains() conditionally returns contentware.ReqType and/or
 // contentware.RespType depending on the provided configuration.
-func (rq Ware) Contains() []string {
+func (m Middle) Contains() []string {
 	c := make([]string, 0)
-	if rq.determineReqType {
-		c = append(c, "contentware.ReqType")
+	c = append(c, "contentware")
+	if m.determineReqType {
+		c = append(c, "contentware/requests")
 	}
-	if rq.determineRespType {
-		c = append(c, "contentware.RespType")
+	if m.determineRespType {
+		c = append(c, "contentware/responses")
 	}
 	return c
 }
-func (rq Ware) Requires() []string { return []string{} }
+func (m Middle) Requires() []string { return []string{} }
 
-func (rq Ware) Handle(next httpware.Handler) httpware.Handler {
+func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		if rq.determineReqType {
-			ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), rq.def.RequestTypes))
+		if m.determineReqType {
+			ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), m.conf.RequestTypes))
 		}
-		if rq.determineRespType {
-			ct := GetContentMatch(r.Header.Get("Accept"), rq.def.ResponseTypes)
+		if m.determineRespType {
+			ct := GetContentMatch(r.Header.Get("Accept"), m.conf.ResponseTypes)
 			ctx = context.WithValue(ctx, httpware.ResponseContentTypeKey, ct)
 			w.Header().Set("Content-Type", ct.Value)
 		}
