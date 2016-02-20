@@ -79,7 +79,7 @@ func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 	return ct.(*ContentType)
 }
 
-// contentware.Ware is middleware that parses content types. The 'Content-Type'
+// contentware.Middle is middleware that parses content types. The 'Content-Type'
 // header is inspected for determining the request content type. The 'Accept'
 // header is parsed for determined the appropriate response content type.
 type Middle struct {

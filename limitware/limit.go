@@ -44,9 +44,8 @@ type Middle struct {
 	addrs map[string]int
 }
 
-// New creates a new Rate httpware.Middleware instance. The limit is the max
-// number of requests that a single remote address can have open. It applies
-// to any handlers downstream from this middleware.
+// New creates a new limitware.Middle instance. It can limit the requests per
+// remote and the total requests.
 func New(conf Config) Middle {
 	middle := Middle{
 		remoteLimit: conf.RemoteLimit,
