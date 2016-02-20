@@ -1,6 +1,6 @@
 /*
-Package errorware provides middleware for handling errors in other
-httpware.Handler implementations.
+Package errorware provides middleware for handling errors returned by other
+httpware.Handler functions.
 */
 package errorware
 
@@ -14,11 +14,32 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Middle struct {
+var (
+	Defaults = Config{
+		// It is generally a good thing to hide >500 error messages from
+		// clients, and show a predefined message, while logging the
+		// interesting stuff.
+		Suppress500Messages: true,
+	}
+)
+
+type Config struct {
+	// When true, the error messages for >500 http errors will not be sent in
+	// responses.
+	Suppress500Messages bool
 }
 
-func New() *Middle {
-	return &Middle{}
+// errorware.Middle inspects the error returned by downstream handlers. If it
+// is of the type httperr.Err, it will return the status code that is contained
+// within the Err struct, otherwise it will default to a
+// 500 - "internal server error" for all non-nil error returns.
+type Middle struct {
+	conf Config
+}
+
+// New returns an instance of the middleware.
+func New(conf Config) *Middle {
+	return &Middle{conf}
 }
 
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/errorware"} }
@@ -35,13 +56,21 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 				w.WriteHeader(e.StatusCode)
 				respErr.StatusCode = e.StatusCode
 				if e.StatusCode >= 500 {
-					respErr.Message = http.StatusText(respErr.StatusCode)
+					if m.conf.Suppress500Messages {
+						respErr.Message = http.StatusText(respErr.StatusCode)
+					} else {
+						respErr.Message = e.Message
+					}
 				}
 				respErr.Fields = e.Fields
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
 				respErr.StatusCode = http.StatusInternalServerError
-				respErr.Message = err.Error()
+				if m.conf.Suppress500Messages {
+					respErr.Message = http.StatusText(http.StatusInternalServerError)
+				} else {
+					respErr.Message = err.Error()
+				}
 			}
 
 			rct := contentware.ResponseTypeFromCtx(ctx)

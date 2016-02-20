@@ -33,6 +33,7 @@ type Config struct {
 	ExposeHeaders []string
 }
 
+// corsware.Middle is middleware which enables Cross-Origin Resource Sharing.
 type Middle struct {
 	allowOrigin         string
 	allowCredentials    string
@@ -40,6 +41,7 @@ type Middle struct {
 	shouldExposeHeaders bool
 }
 
+// New returns a new instance of the middleware.
 func New(conf Config) *Middle {
 	return &Middle{
 		allowOrigin:         conf.AllowOrigin,

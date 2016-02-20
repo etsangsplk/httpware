@@ -1,6 +1,6 @@
 /*
 Package contentware provides http middleware for parsing content-types in http
-requests (using the Accept & Content-Type headers).
+requests (using the 'Accept' & 'Content-Type' headers).
 */
 package contentware
 
@@ -36,8 +36,10 @@ var (
 		Unmarshal:    xml.Unmarshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
 	}
+
 	JsonOverXml = []*ContentType{Json, Xml}
 	XmlOverJson = []*ContentType{Xml, Json}
+
 	// Defaults is a reasonable confguration that should work 90% of the time.
 	Defaults = Config{
 		RequestTypes:  JsonOverXml,
@@ -53,16 +55,26 @@ type Config struct {
 }
 
 type UnmarshalFunc func([]byte, interface{}) error
+
+// MarshalWriteFunc marshals and writes all in one go.
 type MarshalWriteFunc func(io.Writer, interface{}) error
 
 type ContentType struct {
-	SearchText   string
-	Value        string
-	Key          int32
-	Unmarshal    UnmarshalFunc
+	// Text which a header should contain to result in this content type
+	SearchText string
+	// The header value that will be set for this content type
+	Value string
+	// Identifies the content type
+	Key int32
+	// Function which is used to unmarshal the http request body
+	Unmarshal UnmarshalFunc
+	// Function with is used to write an entity to an io.Writer
+	// (usually http.ResponseWriter)
 	MarshalWrite MarshalWriteFunc
 }
 
+// RequestTypeFromCtx gives the content type that was parsed from the
+// 'Content-Type' header.
 func RequestTypeFromCtx(ctx context.Context) *ContentType {
 	ct := ctx.Value(httpware.RequestContentTypeKey)
 	if ct == nil {
@@ -71,6 +83,8 @@ func RequestTypeFromCtx(ctx context.Context) *ContentType {
 	return ct.(*ContentType)
 }
 
+// ResponseTypeFromCtx gives the content type that was parsed from the
+// 'Accept' header.
 func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 	ct := ctx.Value(httpware.ResponseContentTypeKey)
 	if ct == nil {
@@ -81,7 +95,7 @@ func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 
 // contentware.Middle is middleware that parses content types. The 'Content-Type'
 // header is inspected for determining the request content type. The 'Accept'
-// header is parsed for determined the appropriate response content type.
+// header is parsed for determining the appropriate response content type.
 type Middle struct {
 	conf Config
 }
@@ -115,6 +129,9 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	})
 }
 
+// GetContentMatch parses a http header and returns the determined
+// ContentType struct. If multiple types match, it will choose with priority
+// given to the first elements in the given ContentType array.
 func GetContentMatch(header string, cts []*ContentType) *ContentType {
 	for _, c := range cts {
 		if strings.Contains(header, c.SearchText) {

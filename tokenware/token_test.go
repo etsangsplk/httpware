@@ -15,7 +15,7 @@ import (
 func TestWare(t *testing.T) {
 	secret := []byte("shh")
 	m := httpware.MustCompose(
-		errorware.New(),
+		errorware.New(errorware.Defaults),
 		New(secret),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

@@ -23,6 +23,10 @@ const (
 	MAX = int64(^uint64(0) >> 1)
 )
 
+// EntityFromCtx returns an interface{} which contains a pointer to an entity
+// of the type passed in the config, and parsed from the request body. It can
+// be converted to the configured type, but don't forget to use a pointer,
+// ie: EntityFromCtx(ctx).(*User)
 func EntityFromCtx(ctx context.Context) interface{} {
 	return ctx.Value(httpware.EntityKey)
 }
@@ -38,11 +42,14 @@ type Config struct {
 
 type ValidateFunc func(interface{}) error
 
+// entityware.Middle parses and optionally validates an entity in an http
+// request body.
 type Middle struct {
 	conf          Config
 	reflectedType reflect.Type
 }
 
+// New returns a new instance of the middleware.
 func New(conf Config) *Middle {
 	return &Middle{
 		conf:          conf,
@@ -53,7 +60,8 @@ func New(conf Config) *Middle {
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/entityware"} }
 func (m *Middle) Requires() []string { return []string{"github.com/nstogner/contentware"} }
 
-// NewEnitity returns a pointer to the new instance of an entity.
+// NewEnitity returns a pointer to a new instance of the entity provided in
+// the configuration.
 func (m *Middle) NewEntity() interface{} {
 	return reflect.New(m.reflectedType).Interface()
 }
@@ -81,7 +89,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 			}
 		}
 
-		newCtx := context.WithValue(ctx, httpware.EntityKey, entity)
-		return next.ServeHTTPContext(newCtx, w, r)
+		ctx = context.WithValue(ctx, httpware.EntityKey, entity)
+		return next.ServeHTTPContext(ctx, w, r)
 	})
 }

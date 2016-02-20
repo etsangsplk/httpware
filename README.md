@@ -39,7 +39,7 @@ func main() {
     // dependencies are not met.
     m := httpware.MustCompose(
         contentware.New(contentware.Defaults),
-        errorware.New(),
+        errorware.New(errorware.Defaults),
         logware.New(logware.Defaults),
     )
 

@@ -13,7 +13,7 @@ import (
 
 func TestHandle(t *testing.T) {
 	c := httpware.MustCompose(
-		New(),
+		New(Defaults),
 	)
 	s := httptest.NewServer(
 		c.Then(
