@@ -21,7 +21,7 @@ func New() Middle {
 	return Middle{}
 }
 
-func (m Middle) Contains() []string { return []string{"errorware"} }
+func (m Middle) Contains() []string { return []string{"github.com/nstogner/errorware"} }
 func (m Middle) Requires() []string { return []string{} }
 
 func (m Middle) Handle(next httpware.Handler) httpware.Handler {

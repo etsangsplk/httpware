@@ -98,6 +98,20 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
     ...
 }
 ```
+#### CREATING MIDDLEWARE
+Any middleware that follows the httpware.Middleware interface can be composed using the above methods.
+```go
+type Middleware interface {
+    Contains() []string
+    Requires() []string
+    Handle(Handler) Handler
+}
+```
+The Contains() method is used to identify the middleware for dependency management. This should contain the fully qualified package name:
+```go
+[]string{"github.com/nstogner/contentware"}
+```
+The Requires() method is used to define what upstream middleware is relied on. This is enforced when the composition functions are called.
 #### USING NON-NATIVE MIDDLEWARE
 Non-native middleware (that which does not implement the httpware.Middleware interface) can be used in compositions if they adhere to the httpware.Handler interface:
 ```go

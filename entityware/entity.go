@@ -50,8 +50,8 @@ func New(conf Config) Middle {
 	}
 }
 
-func (m Middle) Contains() []string { return []string{"entityware"} }
-func (m Middle) Requires() []string { return []string{"contentware/requests"} }
+func (m Middle) Contains() []string { return []string{"github.com/nstogner/entityware"} }
+func (m Middle) Requires() []string { return []string{"github.com/nstogner/contentware"} }
 
 // NewEnitity returns a pointer to the new instance of an entity.
 func (m Middle) NewEntity() interface{} {

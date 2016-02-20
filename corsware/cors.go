@@ -49,7 +49,7 @@ func New(conf Config) Middle {
 	}
 }
 
-func (m Middle) Contains() []string { return []string{"corsware"} }
+func (m Middle) Contains() []string { return []string{"github.com/nstogner/corsware"} }
 func (m Middle) Requires() []string { return []string{} }
 
 func (m Middle) Handle(next httpware.Handler) httpware.Handler {

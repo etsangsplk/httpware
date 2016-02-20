@@ -24,8 +24,8 @@ func New(secret interface{}) Middle {
 	}
 }
 
-func (m Middle) Contains() []string { return []string{"tokenware"} }
-func (m Middle) Requires() []string { return []string{"errorware"} }
+func (m Middle) Contains() []string { return []string{"github.com/nstogner/tokenware"} }
+func (m Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
 func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(httpware.TokenKey).(*jwt.Token)

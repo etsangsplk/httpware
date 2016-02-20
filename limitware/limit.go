@@ -62,8 +62,8 @@ func New(conf Config) Middle {
 	return middle
 }
 
-func (m Middle) Contains() []string { return []string{"limitware", "limitware/requests"} }
-func (m Middle) Requires() []string { return []string{"errorware"} }
+func (m Middle) Contains() []string { return []string{"github.com/nstogner/limitware"} }
+func (m Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
 func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

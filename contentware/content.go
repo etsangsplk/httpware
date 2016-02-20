@@ -84,50 +84,32 @@ func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 // header is parsed for determined the appropriate response content type.
 type Middle struct {
 	conf Config
-
-	determineReqType  bool
-	determineRespType bool
 }
 
-// New creates a new instance of the middleware.
+// New creates a new instance of the middleware. It panics if an invalid
+// configuration is passed.
 func New(conf Config) Middle {
 	middle := Middle{
 		conf: conf,
 	}
-	if len(conf.RequestTypes) > 0 {
-		middle.determineReqType = true
+	if len(conf.RequestTypes) == 0 {
+		panic("conf.RequestTypes must not be empty")
 	}
-	if len(conf.ResponseTypes) > 0 {
-		middle.determineRespType = true
+	if len(conf.ResponseTypes) == 0 {
+		panic("conf.ResponseTypes must not be empty")
 	}
 	return middle
 }
 
-// Contains() conditionally returns contentware.ReqType and/or
-// contentware.RespType depending on the provided configuration.
-func (m Middle) Contains() []string {
-	c := make([]string, 0)
-	c = append(c, "contentware")
-	if m.determineReqType {
-		c = append(c, "contentware/requests")
-	}
-	if m.determineRespType {
-		c = append(c, "contentware/responses")
-	}
-	return c
-}
+func (m Middle) Contains() []string { return []string{"github.com/nstogner/contentware"} }
 func (m Middle) Requires() []string { return []string{} }
 
 func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		if m.determineReqType {
-			ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), m.conf.RequestTypes))
-		}
-		if m.determineRespType {
-			ct := GetContentMatch(r.Header.Get("Accept"), m.conf.ResponseTypes)
-			ctx = context.WithValue(ctx, httpware.ResponseContentTypeKey, ct)
-			w.Header().Set("Content-Type", ct.Value)
-		}
+		ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), m.conf.RequestTypes))
+		ct := GetContentMatch(r.Header.Get("Accept"), m.conf.ResponseTypes)
+		ctx = context.WithValue(ctx, httpware.ResponseContentTypeKey, ct)
+		w.Header().Set("Content-Type", ct.Value)
 
 		return next.ServeHTTPContext(ctx, w, r)
 	})
