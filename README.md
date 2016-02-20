@@ -40,7 +40,7 @@ func main() {
     m := httpware.MustCompose(
         errorware.New(),
         logware.New(logware.Defaults),
-        contentware.NewRespType(contentware.JsonAndXml),
+        contentware.New(contentware.Defaults),
     )
 
     http.ListenAndServe("localhost:8080", m.ThenFunc(handle))
@@ -55,8 +55,8 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
     t := contentware.ResponseTypeFromCtx(ctx)
     
     // t is the content type that was set by the contentware package. In this case
-    // it will be either JSON, or XML as defined above. The middleware took care of
-    // determining the type by inspecting the 'Accept' header.
+    // The middleware took care of determining the type by inspecting the 'Accept'
+    // header.
     t.MarshalWrite(w, resp)
     return nil
 }

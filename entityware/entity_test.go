@@ -19,7 +19,7 @@ type user struct {
 
 func TestParsing(t *testing.T) {
 	c := httpware.MustCompose(
-		contentware.NewReqType(contentware.JsonAndXml),
+		contentware.New(contentware.Defaults),
 		New(Def{
 			Entity:      user{},
 			MaxBodySize: MAX,

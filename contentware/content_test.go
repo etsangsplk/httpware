@@ -17,7 +17,7 @@ type user struct {
 
 func TestRequest(t *testing.T) {
 	c := httpware.MustCompose(
-		NewReqType(JsonAndXml),
+		New(Defaults),
 	)
 	s := httptest.NewServer(
 		c.Then(
@@ -66,7 +66,7 @@ func TestRequest(t *testing.T) {
 
 func TestResponse(t *testing.T) {
 	c := httpware.MustCompose(
-		NewRespType(JsonAndXml),
+		New(Defaults),
 	)
 	s := httptest.NewServer(
 		c.Then(

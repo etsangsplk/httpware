@@ -36,11 +36,21 @@ var (
 		Unmarshal:    xml.Unmarshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
 	}
-	JsonAndXml = []*ContentType{
-		Json,
-		Xml,
+	JsonOverXml = []*ContentType{Json, Xml}
+	XmlOverJson = []*ContentType{Xml, Json}
+	// Defaults is a reasonable confguration that should work 90% of the time.
+	Defaults = Config{
+		RequestTypes:  JsonOverXml,
+		ResponseTypes: JsonOverXml,
 	}
 )
+
+type Config struct {
+	// RequestTypes is a list of parsable types in order of preference.
+	RequestTypes []*ContentType
+	// ResponseTypes is a list of serializable types in order of preference.
+	ResponseTypes []*ContentType
+}
 
 type UnmarshalFunc func([]byte, interface{}) error
 type MarshalWriteFunc func(io.Writer, interface{}) error
@@ -69,54 +79,56 @@ func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 	return ct.(*ContentType)
 }
 
-type ReqType struct {
-	types []*ContentType
+// contentware.Ware is middleware that parses content types. The 'Content-Type'
+// header is inspected for determining the request content type. The 'Accept'
+// header is parsed for determined the appropriate response content type.
+type Ware struct {
+	def Config
+
+	determineReqType  bool
+	determineRespType bool
 }
 
-func NewReqType(types []*ContentType) ReqType {
-	if len(types) == 0 {
-		panic("content types slice must not be empty")
+// New creates a new instance of the middleware.
+func New(def Config) Ware {
+	ware := Ware{
+		def: def,
 	}
-	return ReqType{
-		types: types,
+	if len(def.RequestTypes) > 0 {
+		ware.determineReqType = true
 	}
+	if len(def.ResponseTypes) > 0 {
+		ware.determineRespType = true
+	}
+	return ware
 }
 
-func (rq ReqType) Contains() []string { return []string{"contentware.ReqType"} }
-func (rq ReqType) Requires() []string { return []string{} }
+// Contains() conditionally returns contentware.ReqType and/or
+// contentware.RespType depending on the provided configuration.
+func (rq Ware) Contains() []string {
+	c := make([]string, 0)
+	if rq.determineReqType {
+		c = append(c, "contentware.ReqType")
+	}
+	if rq.determineRespType {
+		c = append(c, "contentware.RespType")
+	}
+	return c
+}
+func (rq Ware) Requires() []string { return []string{} }
 
-func (rq ReqType) Handle(next httpware.Handler) httpware.Handler {
+func (rq Ware) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		reqContType := GetContentMatch(r.Header.Get("Content-Type"), rq.types)
+		if rq.determineReqType {
+			ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), rq.def.RequestTypes))
+		}
+		if rq.determineRespType {
+			ct := GetContentMatch(r.Header.Get("Accept"), rq.def.ResponseTypes)
+			ctx = context.WithValue(ctx, httpware.ResponseContentTypeKey, ct)
+			w.Header().Set("Content-Type", ct.Value)
+		}
 
-		newCtx := context.WithValue(ctx, httpware.RequestContentTypeKey, reqContType)
-		return next.ServeHTTPContext(newCtx, w, r)
-	})
-}
-
-type RespType struct {
-	types []*ContentType
-}
-
-func NewRespType(types []*ContentType) RespType {
-	if len(types) == 0 {
-		panic("content types slice must not be empty")
-	}
-	return RespType{
-		types: types,
-	}
-}
-
-func (rp RespType) Contains() []string { return []string{"contentware.RespType"} }
-func (rp RespType) Requires() []string { return []string{} }
-
-func (rp RespType) Handle(next httpware.Handler) httpware.Handler {
-	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		resContType := GetContentMatch(r.Header.Get("accept"), rp.types)
-
-		w.Header().Set("Content-Type", resContType.Value)
-		newCtx := context.WithValue(ctx, httpware.ResponseContentTypeKey, resContType)
-		return next.ServeHTTPContext(newCtx, w, r)
+		return next.ServeHTTPContext(ctx, w, r)
 	})
 }
 
