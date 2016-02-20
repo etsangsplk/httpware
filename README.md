@@ -38,9 +38,9 @@ func main() {
     // MustCompose chains together middleware. It will panic if middleware
     // dependencies are not met.
     m := httpware.MustCompose(
+        contentware.New(contentware.Defaults),
         errorware.New(),
         logware.New(logware.Defaults),
-        contentware.New(contentware.Defaults),
     )
 
     http.ListenAndServe("localhost:8080", m.ThenFunc(handle))
