@@ -88,7 +88,7 @@ type Middle struct {
 
 // New creates a new instance of the middleware. It panics if an invalid
 // configuration is passed.
-func New(conf Config) Middle {
+func New(conf Config) *Middle {
 	middle := Middle{
 		conf: conf,
 	}
@@ -98,13 +98,13 @@ func New(conf Config) Middle {
 	if len(conf.ResponseTypes) == 0 {
 		panic("conf.ResponseTypes must not be empty")
 	}
-	return middle
+	return &middle
 }
 
-func (m Middle) Contains() []string { return []string{"github.com/nstogner/contentware"} }
-func (m Middle) Requires() []string { return []string{} }
+func (m *Middle) Contains() []string { return []string{"github.com/nstogner/contentware"} }
+func (m *Middle) Requires() []string { return []string{} }
 
-func (m Middle) Handle(next httpware.Handler) httpware.Handler {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), m.conf.RequestTypes))
 		ct := GetContentMatch(r.Header.Get("Accept"), m.conf.ResponseTypes)

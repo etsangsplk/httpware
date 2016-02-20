@@ -24,7 +24,7 @@ type Composite struct {
 // MustCompose takes multiple Middleware instances and checks for declared
 // dependencies, returning an instance of Composite. It will panic if any
 // dependencies are not met.
-func MustCompose(mdlw ...Middleware) Composite {
+func MustCompose(mdlw ...Middleware) *Composite {
 	contains := make(map[string]bool)
 	for _, m := range mdlw {
 		for _, is := range m.Contains() {
@@ -40,15 +40,15 @@ func MustCompose(mdlw ...Middleware) Composite {
 	for c, _ := range contains {
 		containsSlice = append(containsSlice, c)
 	}
-	return Composite{
+	return &Composite{
 		middle:   append(([]Middleware)(nil), mdlw...),
 		contains: containsSlice,
 	}
 }
 
-func (c Composite) Contains() []string { return c.contains }
-func (c Composite) Requires() []string { return []string{} }
-func (c Composite) Handle(h Handler) Handler {
+func (c *Composite) Contains() []string { return c.contains }
+func (c *Composite) Requires() []string { return []string{} }
+func (c *Composite) Handle(h Handler) Handler {
 	for i := len(c.middle) - 1; i >= 0; i-- {
 		h = c.middle[i].Handle(h)
 	}
@@ -59,18 +59,20 @@ func (c Composite) Handle(h Handler) Handler {
 
 // With is a convenience method which in turn calls MustCompose, prepending
 // the current Composite as the first Middleware instance.
-func (c Composite) With(mdlw ...Middleware) Composite {
-	return MustCompose(append([]Middleware{Middleware(c)}, mdlw...)...)
+func (c *Composite) With(mdlw ...Middleware) *Composite {
+	m := make([]Middleware, 1)
+	m[0] = Middleware(c)
+	return MustCompose(append(m, mdlw...)...)
 }
 
 // Then is used to call the final handler than will terminate the chain of
 // middleware.
-func (c Composite) Then(hf HandlerFunc) CompositeHandler {
+func (c *Composite) Then(hf HandlerFunc) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
 
 // ThenFunc is a convenience method which calls the Then method.
-func (c Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
+func (c *Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
 

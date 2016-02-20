@@ -40,8 +40,8 @@ type Middle struct {
 	shouldExposeHeaders bool
 }
 
-func New(conf Config) Middle {
-	return Middle{
+func New(conf Config) *Middle {
+	return &Middle{
 		allowOrigin:         conf.AllowOrigin,
 		allowCredentials:    strconv.FormatBool(conf.AllowCredentials),
 		exposeHeaders:       strings.Join(conf.ExposeHeaders, ", "),
@@ -49,10 +49,10 @@ func New(conf Config) Middle {
 	}
 }
 
-func (m Middle) Contains() []string { return []string{"github.com/nstogner/corsware"} }
-func (m Middle) Requires() []string { return []string{} }
+func (m *Middle) Contains() []string { return []string{"github.com/nstogner/corsware"} }
+func (m *Middle) Requires() []string { return []string{} }
 
-func (m Middle) Handle(next httpware.Handler) httpware.Handler {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("Access-Control-Allow-Origin", m.allowOrigin)
 		w.Header().Set("Access-Control-Allow-Credentials", m.allowCredentials)

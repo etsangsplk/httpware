@@ -18,20 +18,20 @@ type Middle struct {
 	secret interface{}
 }
 
-func New(secret interface{}) Middle {
-	return Middle{
+func New(secret interface{}) *Middle {
+	return &Middle{
 		secret: secret,
 	}
 }
 
-func (m Middle) Contains() []string { return []string{"github.com/nstogner/tokenware"} }
-func (m Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
+func (m *Middle) Contains() []string { return []string{"github.com/nstogner/tokenware"} }
+func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
 func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(httpware.TokenKey).(*jwt.Token)
 }
 
-func (m Middle) Handle(next httpware.Handler) httpware.Handler {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		token, err := jwt.ParseFromRequest(
 			r,

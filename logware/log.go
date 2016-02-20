@@ -34,14 +34,14 @@ type Middle struct {
 	conf Config
 }
 
-func New(conf Config) Middle {
-	return Middle{conf}
+func New(conf Config) *Middle {
+	return &Middle{conf}
 }
 
-func (m Middle) Contains() []string { return []string{"github.com/nstogner/logware"} }
-func (m Middle) Requires() []string { return []string{} }
+func (m *Middle) Contains() []string { return []string{"github.com/nstogner/logware"} }
+func (m *Middle) Requires() []string { return []string{} }
 
-func (m Middle) Handle(next httpware.Handler) httpware.Handler {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		// Call downstream handlers.
 		err := next.ServeHTTPContext(ctx, w, r)

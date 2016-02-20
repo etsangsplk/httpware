@@ -6,6 +6,7 @@ interface for easy composition with other middleware.
 package limitware
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -46,11 +47,12 @@ type Middle struct {
 
 // New creates a new limitware.Middle instance. It can limit the requests per
 // remote and the total requests.
-func New(conf Config) Middle {
+func New(conf Config) *Middle {
 	middle := Middle{
 		remoteLimit: conf.RemoteLimit,
-		addrs:       make(map[string]int),
 		totalLimit:  conf.TotalLimit,
+		total:       0,
+		addrs:       make(map[string]int),
 	}
 	if conf.RetryAfter == 0 {
 		headerValue := strconv.Itoa(conf.RetryAfter)
@@ -58,13 +60,13 @@ func New(conf Config) Middle {
 	} else {
 		middle.retryHeader = func(w http.ResponseWriter) {}
 	}
-	return middle
+	return &middle
 }
 
-func (m Middle) Contains() []string { return []string{"github.com/nstogner/limitware"} }
-func (m Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
+func (m *Middle) Contains() []string { return []string{"github.com/nstogner/limitware"} }
+func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
-func (m Middle) Handle(next httpware.Handler) httpware.Handler {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		remote := strings.Split(r.RemoteAddr, ":")
 		if len(remote) != 2 {
@@ -86,7 +88,15 @@ func (m Middle) Handle(next httpware.Handler) httpware.Handler {
 func (m *Middle) TotalRate() uint64 {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
+	fmt.Println("totalRate", m.total)
 	return m.total
+}
+
+// RemtoeRate gets the number of active requests for a given remote.
+func (m *Middle) RemoteRate(addr string) int {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	return m.addrs[addr]
 }
 
 func (m *Middle) increment(addr string) bool {
@@ -99,6 +109,7 @@ func (m *Middle) increment(addr string) bool {
 	}
 	return false
 }
+
 func (m *Middle) decrement(addr string) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

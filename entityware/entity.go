@@ -43,22 +43,22 @@ type Middle struct {
 	reflectedType reflect.Type
 }
 
-func New(conf Config) Middle {
-	return Middle{
+func New(conf Config) *Middle {
+	return &Middle{
 		conf:          conf,
 		reflectedType: reflect.TypeOf(conf.Entity),
 	}
 }
 
-func (m Middle) Contains() []string { return []string{"github.com/nstogner/entityware"} }
-func (m Middle) Requires() []string { return []string{"github.com/nstogner/contentware"} }
+func (m *Middle) Contains() []string { return []string{"github.com/nstogner/entityware"} }
+func (m *Middle) Requires() []string { return []string{"github.com/nstogner/contentware"} }
 
 // NewEnitity returns a pointer to the new instance of an entity.
-func (m Middle) NewEntity() interface{} {
+func (m *Middle) NewEntity() interface{} {
 	return reflect.New(m.reflectedType).Interface()
 }
 
-func (m Middle) Handle(next httpware.Handler) httpware.Handler {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, m.conf.MaxBodySize))
 		if err != nil {
