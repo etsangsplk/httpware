@@ -32,7 +32,7 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// middleware passes data via the context variable.
 	t := contentware.ResponseTypeFromCtx(ctx)
 	// t is the content type that was set by the contentware package. In this case
-	// The middleware took care of determining the type by inspecting the 'Accept'
+	// the middleware took care of determining the type by inspecting the 'Accept'
 	// header.
 	t.MarshalWrite(w, resp)
 	return nil

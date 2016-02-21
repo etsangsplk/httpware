@@ -14,29 +14,40 @@ import (
 	"golang.org/x/net/context"
 )
 
-type Middle struct {
-	secret interface{}
+type Config struct {
+	// The secret should be the same that was used to sign the token.
+	Secret interface{}
 }
 
-func New(secret interface{}) *Middle {
+// TokenFromCtx retreives the decoded JWT.
+func TokenFromCtx(ctx context.Context) *jwt.Token {
+	return ctx.Value(httpware.TokenKey).(*jwt.Token)
+}
+
+// tokenware.Middle parses the JWT in the 'Authorization' header. It will
+// return an 'Unauthorized' response if the token is missing or invalid.
+type Middle struct {
+	conf Config
+}
+
+// New returns a new instance of the middleware.
+func New(conf Config) *Middle {
 	return &Middle{
-		secret: secret,
+		// Note: A config struct is used here so that backwards compatibility
+		// can be maintained in the API if new fields need to be added later.
+		conf: conf,
 	}
 }
 
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/tokenware"} }
 func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
-func TokenFromCtx(ctx context.Context) *jwt.Token {
-	return ctx.Value(httpware.TokenKey).(*jwt.Token)
-}
-
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		token, err := jwt.ParseFromRequest(
 			r,
 			func(token *jwt.Token) (interface{}, error) {
-				return m.secret, nil
+				return m.conf.Secret, nil
 			},
 		)
 
