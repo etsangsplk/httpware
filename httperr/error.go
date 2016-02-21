@@ -5,12 +5,15 @@ optional addition of arbitrary fields.
 */
 package httperr
 
+// Err is a struct which carries the information of an error which occurs in
+// a http handler.
 type Err struct {
 	StatusCode int                    `json:"-" xml:"-"`
 	Message    string                 `json:"message" xml:"message"`
 	Fields     map[string]interface{} `json:"fields" xml:"fields"`
 }
 
+// New creates an bare minimum http error.
 func New(msg string, status int) Err {
 	return Err{
 		StatusCode: status,
@@ -19,6 +22,8 @@ func New(msg string, status int) Err {
 	}
 }
 
+// WithField returns a new Err with the given key-value pair included
+// in the 'Fields' field.
 func (err Err) WithField(name string, value interface{}) Err {
 	err.Fields[name] = value
 	return Err{
@@ -28,6 +33,8 @@ func (err Err) WithField(name string, value interface{}) Err {
 	}
 }
 
+// The Error() method allows the Err struct to satisfy the standard error
+// interface
 func (err Err) Error() string {
 	return err.Message
 }
