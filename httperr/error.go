@@ -34,7 +34,7 @@ func (err Err) WithField(name string, value interface{}) Err {
 }
 
 // The Error() method allows the Err struct to satisfy the standard error
-// interface
+// interface.
 func (err Err) Error() string {
 	return err.Message
 }

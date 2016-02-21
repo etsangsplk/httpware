@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	// Defaults is a reasonable configuration that should work for most cases.
 	Defaults = Config{
 		Logger:     logrus.New(),
 		Headers:    []string{},
@@ -29,11 +30,13 @@ type Config struct {
 	RemoteAddr bool
 }
 
-// logware.Middle logs each error that is returned by the downstream handler.
+// logware.Middle logs http responses and any errors returned by the downstream
+// handler.
 type Middle struct {
 	conf Config
 }
 
+// New returns a new logware.Middle instance.
 func New(conf Config) *Middle {
 	return &Middle{conf}
 }

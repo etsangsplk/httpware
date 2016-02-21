@@ -1,7 +1,7 @@
 package httpware
 
 // Anonymous is an implementation of the Middleware interface that has no
-// dependencies.
+// dependencies and returns an empty Contains() method.
 type Anonymous struct {
 	h func(Handler) Handler
 }
