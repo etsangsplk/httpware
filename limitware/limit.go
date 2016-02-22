@@ -26,7 +26,7 @@ var (
 	}
 )
 
-// Config is used to intialize a new instance of Middle.
+// Config is used to initialize a new instance of Middle.
 type Config struct {
 	// The number of active requests a single remote address can have
 	RemoteLimit int
