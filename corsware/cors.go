@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	// Defaults is a reasonable configuration.
 	Defaults = Config{
 		AllowOrigin:      "*",
 		AllowCredentials: false,
@@ -33,7 +34,7 @@ type Config struct {
 	ExposeHeaders []string
 }
 
-// corsware.Middle is middleware which enables Cross-Origin Resource Sharing.
+// Middle is middleware which enables Cross-Origin Resource Sharing.
 type Middle struct {
 	allowOrigin         string
 	allowCredentials    string
@@ -51,9 +52,13 @@ func New(conf Config) *Middle {
 	}
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/corsware"} }
+
+// Requires indentifies what this this middleware depends on.
 func (m *Middle) Requires() []string { return []string{} }
 
+// Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("Access-Control-Allow-Origin", m.allowOrigin)

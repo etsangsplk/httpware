@@ -25,12 +25,12 @@ func TestRequest(t *testing.T) {
 				ct := RequestTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":
-					if ct.Key != KeyJson {
+					if ct.Key != KeyJSON {
 						t.Fatal("expected json type")
 					}
 					return nil
 				case "/test-xml":
-					if ct.Key != KeyXml {
+					if ct.Key != KeyXML {
 						t.Fatal("expected xml type")
 					}
 					return nil
@@ -74,12 +74,12 @@ func TestResponse(t *testing.T) {
 				ct := ResponseTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":
-					if ct.Key != KeyJson {
+					if ct.Key != KeyJSON {
 						t.Fatal("expected json type")
 					}
 					return nil
 				case "/test-xml":
-					if ct.Key != KeyXml {
+					if ct.Key != KeyXML {
 						t.Fatal("expected xml type")
 					}
 					return nil

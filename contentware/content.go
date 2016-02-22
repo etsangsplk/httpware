@@ -17,36 +17,37 @@ import (
 )
 
 const (
-	KeyJson = 0
-	KeyXml  = 1
+	KeyJSON = 0
+	KeyXML  = 1
 )
 
 var (
-	Json = &ContentType{
+	JSON = &ContentType{
 		SearchText:   "json",
 		Value:        "application/json",
-		Key:          KeyJson,
+		Key:          KeyJSON,
 		Unmarshal:    json.Unmarshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
 	}
-	Xml = &ContentType{
+	XML = &ContentType{
 		SearchText:   "xml",
 		Value:        "application/xml",
-		Key:          KeyXml,
+		Key:          KeyXML,
 		Unmarshal:    xml.Unmarshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
 	}
 
-	JsonOverXml = []*ContentType{Json, Xml}
-	XmlOverJson = []*ContentType{Xml, Json}
+	JSONOverXML = []*ContentType{JSON, XML}
+	XMLOverJSON = []*ContentType{XML, JSON}
 
 	// Defaults is a reasonable confguration that should work 90% of the time.
 	Defaults = Config{
-		RequestTypes:  JsonOverXml,
-		ResponseTypes: JsonOverXml,
+		RequestTypes:  JSONOverXML,
+		ResponseTypes: JSONOverXML,
 	}
 )
 
+// Config is used to define content type preferences.
 type Config struct {
 	// RequestTypes is a list of parsable types in order of preference.
 	RequestTypes []*ContentType
@@ -54,11 +55,14 @@ type Config struct {
 	ResponseTypes []*ContentType
 }
 
+// UnmarshalFunc calls an unmarshaller (ie: JSON/XML).
 type UnmarshalFunc func([]byte, interface{}) error
 
 // MarshalWriteFunc marshals and writes all in one go.
 type MarshalWriteFunc func(io.Writer, interface{}) error
 
+// ContentType is a struct which makes serializing and deserializing http
+// requests/responses easier.
 type ContentType struct {
 	// Text which a header should contain to result in this content type
 	SearchText string
@@ -93,7 +97,7 @@ func ResponseTypeFromCtx(ctx context.Context) *ContentType {
 	return ct.(*ContentType)
 }
 
-// contentware.Middle is middleware that parses content types. The 'Content-Type'
+// Middle is middleware that parses content types. The 'Content-Type'
 // header is inspected for determining the request content type. The 'Accept'
 // header is parsed for determining the appropriate response content type.
 type Middle struct {
@@ -115,9 +119,13 @@ func New(conf Config) *Middle {
 	return &middle
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/contentware"} }
+
+// Requires indentifies what this this middleware depends on.
 func (m *Middle) Requires() []string { return []string{} }
 
+// Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type"), m.conf.RequestTypes))

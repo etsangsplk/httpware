@@ -77,7 +77,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 			// If the response content type has not already been parsed by upstream middleware
 			// then it must be parsed now.
 			if rct == nil {
-				rct = contentware.GetContentMatch(w.Header().Get("Accept"), contentware.JsonOverXml)
+				rct = contentware.GetContentMatch(w.Header().Get("Accept"), contentware.JSONOverXML)
 			}
 			rct.MarshalWrite(w, respErr)
 		}
