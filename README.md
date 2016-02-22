@@ -48,7 +48,7 @@ func main() {
 
 func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
     resp := &struct {
-        Greeting string `json:"greeting", "xml": greeting`
+        Greeting string `json:"greeting" xml:"greeting"`
     }{"Hi there!"}
     
     // middleware passes data via the context variable.

@@ -102,6 +102,6 @@ func TestCompose(t *testing.T) {
 		t.Fatal("expected 'middle2' header to be set")
 	}
 	if resp.StatusCode != http.StatusNoContent {
-		t.Fatal("expected status code %v, got %v", http.StatusNoContent, resp.StatusCode)
+		t.Fatalf("expected status code %v, got %v", http.StatusNoContent, resp.StatusCode)
 	}
 }
