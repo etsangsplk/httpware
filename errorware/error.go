@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	// Defaults is a reasonable configuration.
 	Defaults = Config{
 		// It is generally a good thing to hide >500 error messages from
 		// clients, and show a predefined message, while logging the
@@ -23,13 +24,14 @@ var (
 	}
 )
 
+// Config is used for initiating a new instance of the middleware.
 type Config struct {
 	// When true, the error messages for >500 http errors will not be sent in
 	// responses.
 	Suppress500Messages bool
 }
 
-// errorware.Middle inspects the error returned by downstream handlers. If it
+// Middle inspects the error returned by downstream handlers. If it
 // is of the type httperr.Err, it will return the status code that is contained
 // within the Err struct, otherwise it will default to a
 // 500 - "internal server error" for all non-nil error returns.
@@ -42,9 +44,13 @@ func New(conf Config) *Middle {
 	return &Middle{conf}
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/errorware"} }
+
+// Requires indentifies what this middleware depends on (nothing).
 func (m *Middle) Requires() []string { return []string{} }
 
+// Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if err := next.ServeHTTPContext(ctx, w, r); err != nil {

@@ -17,11 +17,14 @@ import (
 )
 
 const (
+	// KeyJSON identifies the JSON content type.
 	KeyJSON = 0
-	KeyXML  = 1
+	// KeyXML identifies the XML content type.
+	KeyXML = 1
 )
 
 var (
+	// JSON content type
 	JSON = &ContentType{
 		SearchText:   "json",
 		Value:        "application/json",
@@ -29,6 +32,7 @@ var (
 		Unmarshal:    json.Unmarshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
 	}
+	// XML content type
 	XML = &ContentType{
 		SearchText:   "xml",
 		Value:        "application/xml",
@@ -37,7 +41,9 @@ var (
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
 	}
 
+	// JSONOverXML is the preference of using JSON over XML.
 	JSONOverXML = []*ContentType{JSON, XML}
+	// XMLOverJSON is the preference of using XML over JSON.
 	XMLOverJSON = []*ContentType{XML, JSON}
 
 	// Defaults is a reasonable confguration that should work 90% of the time.
@@ -122,7 +128,7 @@ func New(conf Config) *Middle {
 // Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/contentware"} }
 
-// Requires indentifies what this this middleware depends on.
+// Requires indentifies what this middleware depends on (nothing).
 func (m *Middle) Requires() []string { return []string{} }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.

@@ -23,6 +23,7 @@ var (
 	}
 )
 
+// Config is used to initialize a new instance of this middleware.
 type Config struct {
 	Logger     *logrus.Logger
 	Headers    []string
@@ -30,7 +31,7 @@ type Config struct {
 	RemoteAddr bool
 }
 
-// logware.Middle logs http responses and any errors returned by the downstream
+// Middle logs http responses and any errors returned by the downstream
 // handler.
 type Middle struct {
 	conf Config
@@ -44,7 +45,7 @@ func New(conf Config) *Middle {
 // Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/logware"} }
 
-// Requires indentifies what this this middleware depends on.
+// Requires indentifies what this middleware depends on.
 func (m *Middle) Requires() []string { return []string{} }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.

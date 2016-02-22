@@ -13,7 +13,7 @@ import (
 )
 
 type user struct {
-	Id   int    `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -30,7 +30,7 @@ func TestParsing(t *testing.T) {
 		c.Then(
 			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				u := EntityFromCtx(ctx).(*user)
-				if u.Id != 123 {
+				if u.ID != 123 {
 					t.Fatal("expected user id to equal 123")
 				}
 				if u.Name != "abc" {

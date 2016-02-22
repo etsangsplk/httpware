@@ -19,7 +19,7 @@ type Handler interface {
 // handers.
 type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
 
-// ServerHTTPContext calls h(ctx, w, r).
+// ServeHTTPContext calls h(ctx, w, r).
 func (h HandlerFunc) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return h(ctx, w, r)
 }

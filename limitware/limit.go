@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	// Defaults is a reasonable configuration.
 	Defaults = Config{
 		RemoteLimit: 100,
 		TotalLimit:  1000000,
@@ -25,6 +26,7 @@ var (
 	}
 )
 
+// Config is used to intialize a new instance of Middle.
 type Config struct {
 	// The number of active requests a single remote address can have
 	RemoteLimit int
@@ -34,6 +36,7 @@ type Config struct {
 	RetryAfter int
 }
 
+// Middle is middleware that limits http requests.
 type Middle struct {
 	remoteLimit int
 	totalLimit  uint64
@@ -63,9 +66,14 @@ func New(conf Config) *Middle {
 	return &middle
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/limitware"} }
+
+// Requires indentifies what this middleware depends on, in this case,
+// it requires github.com/nstogner/errorware.
 func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
+// Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		remote := strings.Split(r.RemoteAddr, ":")
@@ -92,7 +100,7 @@ func (m *Middle) TotalRate() uint64 {
 	return m.total
 }
 
-// RemtoeRate gets the number of active requests for a given remote.
+// RemoteRate gets the number of active requests for a given remote.
 func (m *Middle) RemoteRate(addr string) int {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

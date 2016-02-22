@@ -14,6 +14,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+// Config is used to initialize a new instance of this middleware.
 type Config struct {
 	// The secret should be the same that was used to sign the token.
 	Secret interface{}
@@ -24,7 +25,7 @@ func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(httpware.TokenKey).(*jwt.Token)
 }
 
-// tokenware.Middle parses the JWT in the 'Authorization' header. It will
+// Middle parses the JWT in the 'Authorization' header. It will
 // return an 'Unauthorized' response if the token is missing or invalid.
 type Middle struct {
 	conf Config
@@ -39,9 +40,14 @@ func New(conf Config) *Middle {
 	}
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/tokenware"} }
+
+// Requires indentifies what this middleware depends on, in this case,
+// it requires github.com/nstogner/errorware.
 func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
+// Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		token, err := jwt.ParseFromRequest(
@@ -54,8 +60,9 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 		if err == nil && token.Valid {
 			newCtx := context.WithValue(ctx, httpware.TokenKey, token)
 			return next.ServeHTTPContext(newCtx, w, r)
-		} else {
-			return httperr.New("invalid token", http.StatusUnauthorized)
 		}
+
+		// No soup for you.
+		return httperr.New("invalid token", http.StatusUnauthorized)
 	})
 }

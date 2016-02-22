@@ -17,9 +17,13 @@ import (
 )
 
 const (
-	KB  = 1024
-	MB  = 1024 * 1024
-	GB  = 1024 * 1024 * 1024
+	// KB = Kilobytes
+	KB = 1024
+	// MB = Megabytes
+	MB = 1024 * 1024
+	// GB = Gigabytes
+	GB = 1024 * 1024 * 1024
+	// MAX is the maximum value of an int64
 	MAX = int64(^uint64(0) >> 1)
 )
 
@@ -31,6 +35,7 @@ func EntityFromCtx(ctx context.Context) interface{} {
 	return ctx.Value(httpware.EntityKey)
 }
 
+// Config is passed to the New function to initiate an instance of Middle.
 type Config struct {
 	// MaxBodySize is the maximum request body (bytes) that will be accepted.
 	MaxBodySize int64
@@ -40,9 +45,11 @@ type Config struct {
 	Validate ValidateFunc
 }
 
+// ValidateFunc will be passed an interface{} which can be converted to a
+// pointer to an entity.
 type ValidateFunc func(interface{}) error
 
-// entityware.Middle parses and optionally validates an entity in an http
+// Middle parses and optionally validates an entity in an http
 // request body.
 type Middle struct {
 	conf          Config
@@ -57,15 +64,20 @@ func New(conf Config) *Middle {
 	}
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/entityware"} }
+
+// Requires indentifies what this middleware depends on. In this case,
+// it depends on github.com/nstogner/contentware.
 func (m *Middle) Requires() []string { return []string{"github.com/nstogner/contentware"} }
 
-// NewEnitity returns a pointer to a new instance of the entity provided in
+// NewEntity returns a pointer to a new instance of the entity provided in
 // the configuration.
 func (m *Middle) NewEntity() interface{} {
 	return reflect.New(m.reflectedType).Interface()
 }
 
+// Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, m.conf.MaxBodySize))

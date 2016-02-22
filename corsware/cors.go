@@ -55,7 +55,7 @@ func New(conf Config) *Middle {
 // Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/corsware"} }
 
-// Requires indentifies what this this middleware depends on.
+// Requires indentifies what this middleware depends on.
 func (m *Middle) Requires() []string { return []string{} }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.

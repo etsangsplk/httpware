@@ -37,7 +37,7 @@ func MustCompose(mdlw ...Middleware) *Composite {
 		}
 	}
 	containsSlice := make([]string, 0)
-	for c, _ := range contains {
+	for c := range contains {
 		containsSlice = append(containsSlice, c)
 	}
 	return &Composite{
@@ -46,8 +46,16 @@ func MustCompose(mdlw ...Middleware) *Composite {
 	}
 }
 
+// Contains indentifies all of the Middleware instances included in the given
+// Composite instance.
 func (c *Composite) Contains() []string { return c.contains }
+
+// Requires returns an empty array because a composite should have all
+// requirements fulfilled.
 func (c *Composite) Requires() []string { return []string{} }
+
+// Handle takes the next handler as an argument and wraps it in each instance
+// of Middleware contained in the Composite.
 func (c *Composite) Handle(h Handler) Handler {
 	for i := len(c.middle) - 1; i >= 0; i-- {
 		h = c.middle[i].Handle(h)
@@ -83,10 +91,12 @@ type CompositeHandler struct {
 	h Handler
 }
 
+// ServeHTTP fulfills the http.Handler interface.
 func (ch CompositeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ch.h.ServeHTTPContext(context.Background(), w, r)
 }
 
+// ServeHTTPContext fulfills the httpware.Handler interface.
 func (ch CompositeHandler) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return ch.h.ServeHTTPContext(ctx, w, r)
 }
