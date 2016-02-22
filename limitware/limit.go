@@ -78,12 +78,12 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		remote := strings.Split(r.RemoteAddr, ":")
 		if len(remote) != 2 {
-			return next.ServeHTTPContext(ctx, w, r)
+			return next.ServeHTTPCtx(ctx, w, r)
 		}
 
 		if m.increment(remote[0]) {
 			defer m.decrement(remote[0])
-			return next.ServeHTTPContext(ctx, w, r)
+			return next.ServeHTTPCtx(ctx, w, r)
 		}
 
 		// Send a 429 response (Too Many Requests).

@@ -66,6 +66,6 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 		if m.shouldExposeHeaders {
 			w.Header().Set("Access-Control-Expose-Headers", m.exposeHeaders)
 		}
-		return next.ServeHTTPContext(ctx, w, r)
+		return next.ServeHTTPCtx(ctx, w, r)
 	})
 }

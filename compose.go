@@ -93,10 +93,10 @@ type CompositeHandler struct {
 
 // ServeHTTP fulfills the http.Handler interface.
 func (ch CompositeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ch.h.ServeHTTPContext(context.Background(), w, r)
+	ch.h.ServeHTTPCtx(context.Background(), w, r)
 }
 
-// ServeHTTPContext fulfills the httpware.Handler interface.
-func (ch CompositeHandler) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	return ch.h.ServeHTTPContext(ctx, w, r)
+// ServeHTTPCtx fulfills the httpware.Handler interface.
+func (ch CompositeHandler) ServeHTTPCtx(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return ch.h.ServeHTTPCtx(ctx, w, r)
 }

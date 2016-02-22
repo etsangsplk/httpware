@@ -26,7 +26,7 @@ func (tm1 testMiddle1) Requires() []string {
 func (tm1 testMiddle1) Handle(h Handler) Handler {
 	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("middle1", "true")
-		return h.ServeHTTPContext(ctx, w, r)
+		return h.ServeHTTPCtx(ctx, w, r)
 	})
 }
 
@@ -48,13 +48,13 @@ func (tm2 testMiddle2) Requires() []string {
 func (tm2 testMiddle2) Handle(h Handler) Handler {
 	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("middle2", "true")
-		return h.ServeHTTPContext(ctx, w, r)
+		return h.ServeHTTPCtx(ctx, w, r)
 	})
 }
 
 func testAdapt(h Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTPContext(context.Background(), w, r)
+		h.ServeHTTPCtx(context.Background(), w, r)
 	})
 }
 

@@ -102,6 +102,6 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 		}
 
 		ctx = context.WithValue(ctx, httpware.EntityKey, entity)
-		return next.ServeHTTPContext(ctx, w, r)
+		return next.ServeHTTPCtx(ctx, w, r)
 	})
 }

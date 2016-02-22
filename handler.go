@@ -12,14 +12,14 @@ import (
 // sneaky bugs that can be caused by a call to http.Error, while forgeting to
 // return early in a standard http.Handler function.
 type Handler interface {
-	ServeHTTPContext(context.Context, http.ResponseWriter, *http.Request) error
+	ServeHTTPCtx(context.Context, http.ResponseWriter, *http.Request) error
 }
 
 // HandlerFunc is an adapter to allow the use of ordinary functions as
 // handers.
 type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
 
-// ServeHTTPContext calls h(ctx, w, r).
-func (h HandlerFunc) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// ServeHTTPCtx calls h(ctx, w, r).
+func (h HandlerFunc) ServeHTTPCtx(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return h(ctx, w, r)
 }

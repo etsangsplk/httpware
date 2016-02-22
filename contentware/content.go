@@ -139,7 +139,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 		ctx = context.WithValue(ctx, httpware.ResponseContentTypeKey, ct)
 		w.Header().Set("Content-Type", ct.Value)
 
-		return next.ServeHTTPContext(ctx, w, r)
+		return next.ServeHTTPCtx(ctx, w, r)
 	})
 }
 

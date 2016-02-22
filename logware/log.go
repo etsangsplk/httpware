@@ -52,7 +52,7 @@ func (m *Middle) Requires() []string { return []string{} }
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		// Call downstream handlers.
-		err := next.ServeHTTPContext(ctx, w, r)
+		err := next.ServeHTTPCtx(ctx, w, r)
 
 		// Always log the method and path.
 		entry := m.conf.Logger.WithFields(logrus.Fields{

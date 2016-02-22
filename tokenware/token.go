@@ -59,7 +59,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 
 		if err == nil && token.Valid {
 			newCtx := context.WithValue(ctx, httpware.TokenKey, token)
-			return next.ServeHTTPContext(newCtx, w, r)
+			return next.ServeHTTPCtx(newCtx, w, r)
 		}
 
 		// No soup for you.

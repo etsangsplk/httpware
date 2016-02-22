@@ -11,7 +11,7 @@ import (
 func someTestingMiddlware(next Handler) Handler {
 	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("anon", "true")
-		return next.ServeHTTPContext(ctx, w, r)
+		return next.ServeHTTPCtx(ctx, w, r)
 	})
 }
 
