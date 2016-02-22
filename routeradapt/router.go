@@ -1,6 +1,6 @@
 /*
 Package routeradapt provides a set of functions which enable using
-httpware.Handler implementions with the httprouter package.
+httpware.Handler implementations with the httprouter package.
 */
 package routeradapt
 
@@ -27,7 +27,7 @@ func AdaptFunc(hf httpware.HandlerFunc) httprouter.Handle {
 	}
 }
 
-// ParamsFromCtx retreives the httprouter.Params that are set by httprouter.
+// ParamsFromCtx retrieves the httprouter.Params that are set by httprouter.
 func ParamsFromCtx(ctx context.Context) httprouter.Params {
 	return ctx.Value(httpware.RouterParamsKey).(httprouter.Params)
 }

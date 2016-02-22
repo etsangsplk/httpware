@@ -19,7 +19,7 @@ type Config struct {
 	Secret interface{}
 }
 
-// TokenFromCtx retreives the decoded JWT.
+// TokenFromCtx retrieves the decoded JWT.
 func TokenFromCtx(ctx context.Context) *jwt.Token {
 	return ctx.Value(httpware.TokenKey).(*jwt.Token)
 }
