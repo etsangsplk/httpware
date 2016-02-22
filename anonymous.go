@@ -14,6 +14,11 @@ func Anon(h func(Handler) Handler) Anonymous {
 	}
 }
 
-func (a Anonymous) Contains() []string       { return []string{} }
-func (a Anonymous) Requires() []string       { return []string{} }
+// Contains() returns nothing.
+func (a Anonymous) Contains() []string { return []string{} }
+
+// Requires() returns nothing.
+func (a Anonymous) Requires() []string { return []string{} }
+
+// Handle() returns the original handler.
 func (a Anonymous) Handle(h Handler) Handler { return a.h(h) }

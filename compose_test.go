@@ -11,7 +11,7 @@ import (
 type testMiddle1 struct {
 }
 
-func NewTM1() testMiddle1 {
+func newTM1() testMiddle1 {
 	return testMiddle1{}
 }
 
@@ -33,7 +33,7 @@ func (tm1 testMiddle1) Handle(h Handler) Handler {
 type testMiddle2 struct {
 }
 
-func NewTM2() testMiddle2 {
+func newTM2() testMiddle2 {
 	return testMiddle2{}
 }
 
@@ -65,25 +65,25 @@ func TestComposeMissingDep(t *testing.T) {
 		}
 	}()
 	MustCompose(
-		NewTM2(),
-		NewTM1(),
+		newTM2(),
+		newTM1(),
 	)
 }
 
 func TestDoubleCompose(t *testing.T) {
 	c1 := MustCompose(
-		NewTM1(),
+		newTM1(),
 	)
 	MustCompose(
 		c1,
-		NewTM2(),
+		newTM2(),
 	)
 }
 
 func TestCompose(t *testing.T) {
 	c := MustCompose(
-		NewTM1(),
-		NewTM2(),
+		newTM1(),
+		newTM2(),
 	)
 
 	s := httptest.NewServer(c.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

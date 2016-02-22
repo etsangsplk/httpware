@@ -15,8 +15,11 @@ type Handler interface {
 	ServeHTTPContext(context.Context, http.ResponseWriter, *http.Request) error
 }
 
+// HandlerFunc is an adapter to allow the use of ordinary functions as
+// handers.
 type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
 
+// ServerHTTPContext calls h(ctx, w, r).
 func (h HandlerFunc) ServeHTTPContext(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return h(ctx, w, r)
 }

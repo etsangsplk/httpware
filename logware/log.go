@@ -41,9 +41,13 @@ func New(conf Config) *Middle {
 	return &Middle{conf}
 }
 
+// Contains indentifies this middleware for compositions.
 func (m *Middle) Contains() []string { return []string{"github.com/nstogner/logware"} }
+
+// Requires indentifies what this this middleware depends on.
 func (m *Middle) Requires() []string { return []string{} }
 
+// Handle take the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		// Call downstream handlers.
