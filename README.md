@@ -66,7 +66,7 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 Middleware can be chained into composites:
 ```go
     m1 := httpware.MustCompose(
-        errorware.New(),
+        errorware.New(errorware.Defaults),
         logware.New(logware.Defaults),
     )
 ```
@@ -84,7 +84,7 @@ Middleware can be adapted for use with different routers. For example, httproute
 ```go
 main() {
     m := httpware.MustCompose(
-        errorware.New(),
+        errorware.New(errorware.Defaults),
         logware.New(logware.Defaults),
     )
     r := httprouter.New()
