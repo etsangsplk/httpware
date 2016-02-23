@@ -30,6 +30,7 @@ var (
 		Value:        "application/json",
 		Key:          KeyJSON,
 		Unmarshal:    json.Unmarshal,
+		Marshal:      json.Marshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
 	}
 	// XML content type
@@ -38,6 +39,7 @@ var (
 		Value:        "application/xml",
 		Key:          KeyXML,
 		Unmarshal:    xml.Unmarshal,
+		Marshal:      xml.Marshal,
 		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
 	}
 
@@ -67,6 +69,9 @@ type UnmarshalFunc func([]byte, interface{}) error
 // MarshalWriteFunc marshals and writes all in one go.
 type MarshalWriteFunc func(io.Writer, interface{}) error
 
+// MarshalFunc marshals an interface to the correct content type.
+type MarshalFunc func(interface{}) ([]byte, error)
+
 // ContentType is a struct which makes serializing and deserializing http
 // requests/responses easier.
 type ContentType struct {
@@ -78,9 +83,11 @@ type ContentType struct {
 	Key int32
 	// Function which is used to unmarshal the http request body
 	Unmarshal UnmarshalFunc
-	// Function with is used to write an entity to an io.Writer
+	// Function is used to write an entity to an io.Writer
 	// (usually http.ResponseWriter)
 	MarshalWrite MarshalWriteFunc
+	// Function is used to marshal to a byte array
+	Marshal MarshalFunc
 }
 
 // RequestTypeFromCtx gives the content type that was parsed from the
