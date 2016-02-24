@@ -10,7 +10,7 @@ package httperr
 type Err struct {
 	StatusCode int                    `json:"-" xml:"-"`
 	Message    string                 `json:"message" xml:"message"`
-	Fields     map[string]interface{} `json:"fields" xml:"fields"`
+	Fields     map[string]interface{} `json:"fields,omitempty" xml:"fields,omitempty"`
 }
 
 // New creates an bare minimum http error.
