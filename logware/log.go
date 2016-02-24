@@ -75,12 +75,16 @@ func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 		logAsError := false
 		if err != nil {
 			if httpErr, ok := err.(httperr.Err); ok {
-				entry.WithField("error", httpErr)
+				entry = entry.WithFields(logrus.Fields{
+					"statusCode": httpErr.StatusCode,
+					"message":    httpErr.Message,
+				})
+				entry = entry.WithFields(httpErr.Fields)
 				if httpErr.StatusCode >= 500 {
 					logAsError = true
 				}
 			} else {
-				entry.WithField("error",
+				entry = entry.WithField("error",
 					map[string]interface{}{
 						"statusCode": http.StatusInternalServerError,
 						"message":    err,
