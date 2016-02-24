@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httpctx"
 
 	"golang.org/x/net/context"
 )
@@ -21,7 +22,7 @@ func TestRequest(t *testing.T) {
 	)
 	s := httptest.NewServer(
 		c.Then(
-			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				ct := RequestTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":
@@ -70,7 +71,7 @@ func TestResponse(t *testing.T) {
 	)
 	s := httptest.NewServer(
 		c.Then(
-			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				ct := ResponseTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":

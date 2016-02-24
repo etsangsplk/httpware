@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httpctx"
 	"github.com/nstogner/httpware/httperr"
 	"golang.org/x/net/context"
 )
@@ -74,8 +74,8 @@ func (m *Middle) Contains() []string { return []string{"github.com/nstogner/limi
 func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.
-func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
-	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		remote := strings.Split(r.RemoteAddr, ":")
 		if len(remote) != 2 {
 			return next.ServeHTTPCtx(ctx, w, r)

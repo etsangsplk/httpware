@@ -113,10 +113,10 @@ The Contains() method is used to identify the middleware for dependency manageme
 ```
 The Requires() method is used to define what upstream middleware is relied on. This is enforced when the composition functions are called.
 #### USING NON-NATIVE MIDDLEWARE
-Non-native middleware (that which does not implement the httpware.Middleware interface) can be used in compositions if they adhere to the httpware.Handler interface:
+Non-native middleware (that which does not implement the httpware.Middleware interface) can be used in compositions if they adhere to the httpctx.Handler interface:
 ```go
-func someMiddleware(next httpware.Handler) httpware.Handler {
-    return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func someMiddleware(next httpctx.Handler) httpctx.Handler {
+    return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
         ...
         return next.ServeHTTPCtx(ctx, w, r)
     })

@@ -8,6 +8,7 @@ import (
 
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/errorware"
+	"github.com/nstogner/httpware/httpctx"
 
 	"golang.org/x/net/context"
 )
@@ -89,9 +90,9 @@ func TestTotalLimit(t *testing.T) {
 
 type testWare struct{}
 
-func (m testWare) Contains() []string                         { return []string{} }
-func (m testWare) Requires() []string                         { return []string{} }
-func (m testWare) Handle(h httpware.Handler) httpware.Handler { return h }
+func (m testWare) Contains() []string                       { return []string{} }
+func (m testWare) Requires() []string                       { return []string{} }
+func (m testWare) Handle(h httpctx.Handler) httpctx.Handler { return h }
 
 func testHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	if r.URL.Path == "/delay" {

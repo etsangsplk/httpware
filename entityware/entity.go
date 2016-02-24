@@ -11,6 +11,7 @@ import (
 
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/contentware"
+	"github.com/nstogner/httpware/httpctx"
 	"github.com/nstogner/httpware/httperr"
 
 	"golang.org/x/net/context"
@@ -78,8 +79,8 @@ func (m *Middle) NewEntity() interface{} {
 }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.
-func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
-	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, m.conf.MaxBodySize))
 		if err != nil {
 			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", m.conf.MaxBodySize)

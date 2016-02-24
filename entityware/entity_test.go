@@ -8,6 +8,7 @@ import (
 
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/contentware"
+	"github.com/nstogner/httpware/httpctx"
 
 	"golang.org/x/net/context"
 )
@@ -28,7 +29,7 @@ func TestParsing(t *testing.T) {
 
 	s := httptest.NewServer(
 		c.Then(
-			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				u := EntityFromCtx(ctx).(*user)
 				if u.ID != 123 {
 					t.Fatal("expected user id to equal 123")

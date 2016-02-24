@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/nstogner/httpware/httpctx"
+
 	"golang.org/x/net/context"
 )
 
@@ -23,8 +25,8 @@ func (tm1 testMiddle1) Requires() []string {
 	return []string{}
 }
 
-func (tm1 testMiddle1) Handle(h Handler) Handler {
-	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (tm1 testMiddle1) Handle(h httpctx.Handler) httpctx.Handler {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("middle1", "true")
 		return h.ServeHTTPCtx(ctx, w, r)
 	})
@@ -45,14 +47,14 @@ func (tm2 testMiddle2) Requires() []string {
 	return []string{"testmiddle1.Ware"}
 }
 
-func (tm2 testMiddle2) Handle(h Handler) Handler {
-	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (tm2 testMiddle2) Handle(h httpctx.Handler) httpctx.Handler {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("middle2", "true")
 		return h.ServeHTTPCtx(ctx, w, r)
 	})
 }
 
-func testAdapt(h Handler) http.Handler {
+func testAdapt(h httpctx.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTPCtx(context.Background(), w, r)
 	})

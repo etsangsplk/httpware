@@ -5,11 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/nstogner/httpware/httpctx"
+
 	"golang.org/x/net/context"
 )
 
-func someTestingMiddlware(next Handler) Handler {
-	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func someTestingMiddlware(next httpctx.Handler) httpctx.Handler {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("anon", "true")
 		return next.ServeHTTPCtx(ctx, w, r)
 	})

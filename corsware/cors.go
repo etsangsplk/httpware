@@ -10,7 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httpctx"
+
 	"golang.org/x/net/context"
 )
 
@@ -59,8 +60,8 @@ func (m *Middle) Contains() []string { return []string{"github.com/nstogner/cors
 func (m *Middle) Requires() []string { return []string{} }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.
-func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
-	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
+	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		w.Header().Set("Access-Control-Allow-Origin", m.allowOrigin)
 		w.Header().Set("Access-Control-Allow-Credentials", m.allowCredentials)
 		if m.shouldExposeHeaders {

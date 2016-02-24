@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/httpctx"
 	"github.com/nstogner/httpware/httperr"
 
 	"golang.org/x/net/context"
@@ -17,7 +18,7 @@ func TestHandle(t *testing.T) {
 	)
 	s := httptest.NewServer(
 		c.Then(
-			httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 				err := httperr.Err{
 					StatusCode: http.StatusBadRequest,
 					Message:    "better luck next time",
