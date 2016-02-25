@@ -5,7 +5,6 @@ httpctx.Handler functions.
 package errorware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/nstogner/httpware/contentware"
@@ -88,8 +87,7 @@ func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 			if rct == nil {
 				rct = contentware.GetContentMatch(w.Header().Get("Accept"), contentware.JSONOverXML)
 			}
-			log.Println(respErr)
-			rct.MarshalWrite(w, respErr)
+			rct.Encode(w, respErr)
 		}
 		return nil
 	})

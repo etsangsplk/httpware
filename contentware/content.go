@@ -27,21 +27,23 @@ const (
 var (
 	// JSON content type
 	JSON = &ContentType{
-		SearchText:   "json",
-		Value:        "application/json",
-		Key:          KeyJSON,
-		Unmarshal:    json.Unmarshal,
-		Marshal:      json.Marshal,
-		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
+		SearchText: "json",
+		Value:      "application/json",
+		Key:        KeyJSON,
+		Unmarshal:  json.Unmarshal,
+		Decode:     DecodeFunc(func(r io.Reader, e interface{}) error { return json.NewDecoder(r).Decode(e) }),
+		Marshal:    json.Marshal,
+		Encode:     EncodeFunc(func(w io.Writer, bs interface{}) error { return json.NewEncoder(w).Encode(bs) }),
 	}
 	// XML content type
 	XML = &ContentType{
-		SearchText:   "xml",
-		Value:        "application/xml",
-		Key:          KeyXML,
-		Unmarshal:    xml.Unmarshal,
-		Marshal:      xml.Marshal,
-		MarshalWrite: MarshalWriteFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
+		SearchText: "xml",
+		Value:      "application/xml",
+		Key:        KeyXML,
+		Unmarshal:  xml.Unmarshal,
+		Decode:     DecodeFunc(func(r io.Reader, e interface{}) error { return xml.NewDecoder(r).Decode(e) }),
+		Marshal:    xml.Marshal,
+		Encode:     EncodeFunc(func(w io.Writer, bs interface{}) error { return xml.NewEncoder(w).Encode(bs) }),
 	}
 
 	// JSONOverXML is the preference of using JSON over XML.
@@ -64,11 +66,14 @@ type Config struct {
 	ResponseTypes []*ContentType
 }
 
+// DecodeFunc calls reads and unmarshals from a io.Reader.
+type DecodeFunc func(io.Reader, interface{}) error
+
 // UnmarshalFunc calls an unmarshaller (ie: JSON/XML).
 type UnmarshalFunc func([]byte, interface{}) error
 
-// MarshalWriteFunc marshals and writes all in one go.
-type MarshalWriteFunc func(io.Writer, interface{}) error
+// EncodeFunc marshals and writes all in one go.
+type EncodeFunc func(io.Writer, interface{}) error
 
 // MarshalFunc marshals an interface to the correct content type.
 type MarshalFunc func(interface{}) ([]byte, error)
@@ -82,11 +87,13 @@ type ContentType struct {
 	Value string
 	// Identifies the content type
 	Key int32
+	// Function which is used to read and unmarshal from a io.Reader
+	Decode DecodeFunc
 	// Function which is used to unmarshal the http request body
 	Unmarshal UnmarshalFunc
 	// Function is used to write an entity to an io.Writer
 	// (usually http.ResponseWriter)
-	MarshalWrite MarshalWriteFunc
+	Encode EncodeFunc
 	// Function is used to marshal to a byte array
 	Marshal MarshalFunc
 }

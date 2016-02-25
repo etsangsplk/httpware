@@ -39,7 +39,7 @@ func EntityFromCtx(ctx context.Context) interface{} {
 // Config is passed to the New function to initiate an instance of Middle.
 type Config struct {
 	// MaxBodySize is the maximum request body (bytes) that will be accepted.
-	MaxBodySize int64
+	MaxByteSize int64
 	// Entity is a non-pointer instance of the expected entity.
 	Entity interface{}
 	// If left nil, Validate will not be called.
@@ -81,9 +81,9 @@ func (m *Middle) NewEntity() interface{} {
 // Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, m.conf.MaxBodySize))
+		body, err := ioutil.ReadAll(http.MaxBytesReader(w, r.Body, m.conf.MaxByteSize))
 		if err != nil {
-			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", m.conf.MaxBodySize)
+			return httperr.New("request size exceeded limit", http.StatusRequestEntityTooLarge).WithField("byteLimit", m.conf.MaxByteSize)
 		}
 
 		// Pointer to a new instance of the entity

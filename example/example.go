@@ -34,6 +34,6 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// t is the content type that was set by the contentware package. In this case
 	// the middleware took care of determining the type by inspecting the 'Accept'
 	// header.
-	t.MarshalWrite(w, resp)
+	t.Encode(w, resp)
 	return nil
 }

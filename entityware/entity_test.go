@@ -23,7 +23,7 @@ func TestParsing(t *testing.T) {
 		contentware.New(contentware.Defaults),
 		New(Config{
 			Entity:      user{},
-			MaxBodySize: MAX,
+			MaxByteSize: MAX,
 		}),
 	)
 
