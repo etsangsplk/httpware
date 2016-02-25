@@ -1,3 +1,9 @@
+/*
+This example is intended to show a very simple use case for middleware in the
+httpware repository. Once the server is running try POSTing a user:
+
+curl -v localhost:8080 -d '{"id":"bob", "email":"bob@email.com"}'
+*/
 package main
 
 import (
@@ -8,6 +14,7 @@ import (
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/contentware"
 	"github.com/nstogner/httpware/errorware"
+	"github.com/nstogner/httpware/httperr"
 	"github.com/nstogner/httpware/logware"
 )
 
@@ -19,21 +26,28 @@ func main() {
 		errorware.New(errorware.Defaults),
 		logware.New(logware.Defaults),
 	)
-	//logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	http.ListenAndServe("localhost:8080", m.ThenFunc(handle))
 }
 
-func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	resp := &struct {
-		Greeting string `json:"greeting" xml:"greeting"`
-	}{"Hi there!"}
+type user struct {
+	ID    string `json:"id" xml:"id"`
+	Email string `json:"email" xml:"email"`
+}
 
-	// middleware passes data via the context variable.
-	t := contentware.ResponseTypeFromCtx(ctx)
-	// t is the content type that was set by the contentware package. In this case
-	// the middleware took care of determining the type by inspecting the 'Accept'
-	// header.
-	t.Encode(w, resp)
+// handle is meant to demonstrate a POST or PUT endpoint.
+func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	rqt := contentware.ResponseTypeFromCtx(ctx)
+	u := &user{}
+	// Decode from JSON or XML based on the 'Content-Type' header.
+	if err := rqt.Decode(r.Body, u); err != nil {
+		return httperr.New("could not parse body: "+err.Error(), http.StatusBadRequest)
+	}
+
+	// Store u in DB here... //
+
+	rst := contentware.ResponseTypeFromCtx(ctx)
+	// Encode to JSON or XML based on the 'Accept' header.
+	rst.Encode(w, u)
 	return nil
 }
