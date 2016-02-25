@@ -15,7 +15,6 @@ This type of http handler was inspired by several Go blog posts: [net/context](h
 |:--------------|:-------:|
 | Parsing request & response content types | contentware |
 | Enabling CORS | corsware |
-| Unmarshalling (json/xml) and validating entities | entityware |
 | Handling errors | errorware |
 | Limiting requests | limitware |
 | Logging ([logrus](https://github.com/Sirupsen/logrus)) | logware |
