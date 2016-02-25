@@ -37,8 +37,8 @@ type user struct {
 
 // handle is meant to demonstrate a POST or PUT endpoint.
 func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	rqt := contentware.ResponseTypeFromCtx(ctx)
 	u := &user{}
+	rqt := contentware.ResponseTypeFromCtx(ctx)
 	// Decode from JSON or XML based on the 'Content-Type' header.
 	if err := rqt.Decode(r.Body, u); err != nil {
 		return httperr.New("could not parse body: "+err.Error(), http.StatusBadRequest)
