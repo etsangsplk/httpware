@@ -77,7 +77,7 @@ func (c *Composite) With(mdlw ...Middleware) *Composite {
 
 // Then is used to call the final handler than will terminate the chain of
 // middleware.
-func (c *Composite) Then(hf httpctx.HandlerFunc) CompositeHandler {
+func (c *Composite) Then(hf httpctx.Handler) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
 
