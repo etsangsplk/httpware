@@ -20,6 +20,8 @@ var (
 		Headers:    []string{},
 		Referer:    false,
 		RemoteAddr: false,
+		Successes:  true,
+		Failures:   true,
 	}
 )
 
@@ -29,6 +31,10 @@ type Config struct {
 	Headers    []string
 	Referer    bool
 	RemoteAddr bool
+	// Should <500 http responses be logged?
+	Successes bool
+	// Should 500+ http responses be logged?
+	Failures bool
 }
 
 // Middle logs http responses and any errors returned by the downstream
@@ -96,9 +102,13 @@ func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 
 		// Log with the right level and pass on the error.
 		if logAsError {
-			entry.Error("failed to serve request")
+			if m.conf.Failures {
+				entry.Error("failed to serve request")
+			}
 		} else {
-			entry.Info("served request")
+			if m.conf.Successes {
+				entry.Info("served request")
+			}
 		}
 		return err
 	})
