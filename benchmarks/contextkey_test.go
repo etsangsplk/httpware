@@ -2,7 +2,7 @@ package httpwarebenchmarks
 
 import "testing"
 
-// How bad is the perfomance of using strings as context keys?
+// How bad is the performance of using strings as context keys?
 func BenchmarkStringKey(b *testing.B) {
 	m := map[string]string{
 		"github.com/nstogner/oneware":   "one",
