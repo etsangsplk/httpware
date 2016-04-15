@@ -53,7 +53,8 @@ func (m *Middle) Requires() []string { return []string{} }
 // Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		if err := next.ServeHTTPCtx(ctx, w, r); err != nil {
+		err := next.ServeHTTPCtx(ctx, w, r)
+		if err != nil {
 			w.Header().Set("X-Content-Type-Options", "nosniff")
 
 			respErr := httperr.Err{}
@@ -89,6 +90,6 @@ func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 			}
 			rct.Encode(w, respErr)
 		}
-		return nil
+		return err
 	})
 }
