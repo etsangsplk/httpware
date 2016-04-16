@@ -17,7 +17,10 @@ import (
 // code responses to contain errors, set this to false.
 var Suppress500Messages = true
 
-// Handle takes the next handler as an argument and wraps it in this middleware.
+// handleHttpErrors returns the appropriate http response code based on the
+// returned error. If the returned error is not nil and of type httperr.Err
+// the specified status code is returned. Any other errors are treated as
+// a 500 - Internal Server Error.
 func handleHttpErrors(next httpctx.Handler) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		err := next.ServeHTTPCtx(ctx, w, r)
