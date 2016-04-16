@@ -35,7 +35,7 @@ func (c *Composite) Handle(h httpctx.Handler) httpctx.Handler {
 	}
 	return CompositeHandler{
 		// Wrap with error-handling middleware.
-		h: handleHttpErrors(h),
+		h: handleHTTPErrors(h),
 	}
 }
 

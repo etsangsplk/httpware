@@ -11,17 +11,16 @@ import (
 	"golang.org/x/net/context"
 )
 
-// It is generally a good thing to hide >500 error messages from
-// clients, and show a predefined message, while logging the
-// interesting stuff. This option defaults to true, to allow 500+
-// code responses to contain errors, set this to false.
+// Suppress500Messages hides >500 specific error messages from responses to
+// clients and shows a predefined message. This option defaults to true.
+// To allow >500 code responses to contain errors, set this to false.
 var Suppress500Messages = true
 
-// handleHttpErrors returns the appropriate http response code based on the
+// handleHTTPErrors returns the appropriate http response code based on the
 // returned error. If the returned error is not nil and of type httperr.Err
 // the specified status code is returned. Any other errors are treated as
 // a 500 - Internal Server Error.
-func handleHttpErrors(next httpctx.Handler) httpctx.Handler {
+func handleHTTPErrors(next httpctx.Handler) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		err := next.ServeHTTPCtx(ctx, w, r)
 		if err != nil {
