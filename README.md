@@ -43,7 +43,7 @@ func main() {
 
 // handle is meant to demonstrate a POST or PUT endpoint.
 func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	u := &user{}
+	u := &User{}
 	rqt := contentware.ResponseTypeFromCtx(ctx)
 	// Decode from JSON or XML based on the 'Content-Type' header.
 	if err := rqt.Decode(r.Body, u); err != nil {
@@ -63,12 +63,12 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-type user struct {
+type User struct {
 	ID    string `json:"id" xml:"id"`
 	Email string `json:"email" xml:"email"`
 }
 
-func (u *user) validate() error {
+func (u *User) validate() error {
 	if u.ID == "" {
 		return errors.New("field 'id' must not be empty")
 	}
