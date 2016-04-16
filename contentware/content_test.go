@@ -17,7 +17,7 @@ type user struct {
 }
 
 func TestRequest(t *testing.T) {
-	c := httpware.MustCompose(
+	c := httpware.Compose(
 		New(Defaults),
 	)
 	s := httptest.NewServer(
@@ -26,12 +26,12 @@ func TestRequest(t *testing.T) {
 				ct := RequestTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":
-					if ct.Key != KeyJSON {
+					if ct.Key != httpware.JSON {
 						t.Fatal("expected json type")
 					}
 					return nil
 				case "/test-xml":
-					if ct.Key != KeyXML {
+					if ct.Key != httpware.XML {
 						t.Fatal("expected xml type")
 					}
 					return nil
@@ -66,7 +66,7 @@ func TestRequest(t *testing.T) {
 }
 
 func TestResponse(t *testing.T) {
-	c := httpware.MustCompose(
+	c := httpware.Compose(
 		New(Defaults),
 	)
 	s := httptest.NewServer(
@@ -75,12 +75,12 @@ func TestResponse(t *testing.T) {
 				ct := ResponseTypeFromCtx(ctx)
 				switch r.URL.Path {
 				case "/test-json":
-					if ct.Key != KeyJSON {
+					if ct.Key != httpware.JSON {
 						t.Fatal("expected json type")
 					}
 					return nil
 				case "/test-xml":
-					if ct.Key != KeyXML {
+					if ct.Key != httpware.XML {
 						t.Fatal("expected xml type")
 					}
 					return nil

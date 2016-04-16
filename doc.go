@@ -4,7 +4,6 @@
 
 /*
 Package httpware provides patterns for chaining http middleware that relies on
-net/context. Middleware can depend on other middleware. The composition
-functions check for these dependencies when they are called.
+net/context and handle http error responses via returning error values.
 */
 package httpware

@@ -1,7 +1,6 @@
 package httpware
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/nstogner/httpware/httpctx"
@@ -12,49 +11,21 @@ import (
 // The Middleware interface serves as the building block for composing
 // http middleware.
 type Middleware interface {
-	Contains() []string
-	Requires() []string
 	Handle(httpctx.Handler) httpctx.Handler
 }
 
 // Composite is a collection of Middleware instances.
 type Composite struct {
-	middle   []Middleware
-	contains []string
+	middle []Middleware
 }
 
-// MustCompose takes multiple Middleware instances and checks for declared
-// dependencies, returning an instance of Composite. It will panic if any
-// dependencies are not met.
-func MustCompose(mdlw ...Middleware) *Composite {
-	contains := make(map[string]bool)
-	for _, m := range mdlw {
-		for _, is := range m.Contains() {
-			contains[is] = true
-		}
-		for _, dep := range m.Requires() {
-			if !contains[dep] {
-				panic(fmt.Errorf("missing dependency '%s'", dep))
-			}
-		}
-	}
-	containsSlice := make([]string, 0)
-	for c := range contains {
-		containsSlice = append(containsSlice, c)
-	}
+// Compose takes multiple Middleware instances and returns a Composite
+// instance.
+func Compose(mdlw ...Middleware) *Composite {
 	return &Composite{
-		middle:   append(([]Middleware)(nil), mdlw...),
-		contains: containsSlice,
+		middle: append(([]Middleware)(nil), mdlw...),
 	}
 }
-
-// Contains indentifies all of the Middleware instances included in the given
-// Composite instance.
-func (c *Composite) Contains() []string { return c.contains }
-
-// Requires returns an empty array because a composite should have all
-// requirements fulfilled.
-func (c *Composite) Requires() []string { return []string{} }
 
 // Handle takes the next handler as an argument and wraps it in each instance
 // of Middleware contained in the Composite.
@@ -63,16 +34,17 @@ func (c *Composite) Handle(h httpctx.Handler) httpctx.Handler {
 		h = c.middle[i].Handle(h)
 	}
 	return CompositeHandler{
-		h: h,
+		// Wrap with error-handling middleware.
+		h: handleHttpErrors(h),
 	}
 }
 
-// With is a convenience method which in turn calls MustCompose, prepending
+// With is a convenience method which in turn calls Compose, prepending
 // the current Composite as the first Middleware instance.
 func (c *Composite) With(mdlw ...Middleware) *Composite {
 	m := make([]Middleware, 1)
 	m[0] = Middleware(c)
-	return MustCompose(append(m, mdlw...)...)
+	return Compose(append(m, mdlw...)...)
 }
 
 // Then is used to call the final handler than will terminate the chain of

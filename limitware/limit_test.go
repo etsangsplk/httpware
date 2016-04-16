@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/nstogner/httpware"
-	"github.com/nstogner/httpware/errorware"
 	"github.com/nstogner/httpware/httpctx"
 
 	"golang.org/x/net/context"
@@ -18,8 +17,7 @@ func TestRemoteLimit(t *testing.T) {
 		RemoteLimit: 3,
 		TotalLimit:  10,
 	}
-	m := httpware.MustCompose(
-		errorware.New(errorware.Defaults),
+	m := httpware.Compose(
 		New(conf),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -61,7 +59,7 @@ func TestTotalLimit(t *testing.T) {
 		TotalLimit:  10,
 	}
 	mid := New(conf)
-	c0 := httpware.MustCompose(errorware.New(errorware.Defaults), mid)
+	c0 := httpware.Compose(mid)
 	c1 := c0.With(testWare{})
 
 	// Start test servers.
@@ -90,8 +88,6 @@ func TestTotalLimit(t *testing.T) {
 
 type testWare struct{}
 
-func (m testWare) Contains() []string                       { return []string{} }
-func (m testWare) Requires() []string                       { return []string{} }
 func (m testWare) Handle(h httpctx.Handler) httpctx.Handler { return h }
 
 func testHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -110,7 +106,7 @@ func TestCompositeLimit(t *testing.T) {
 		TotalLimit:  10,
 	}
 	mid := New(conf)
-	c0 := httpware.MustCompose(errorware.New(errorware.Defaults), mid)
+	c0 := httpware.Compose(mid)
 	c1 := c0.With(testWare{})
 
 	// Start test servers.

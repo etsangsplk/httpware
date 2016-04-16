@@ -15,7 +15,6 @@ This type of http handler was inspired by several Go blog posts: [net/context](h
 |:--------------|:-------:|
 | Parsing request & response content types | contentware |
 | Enabling CORS | corsware |
-| Handling errors | errorware |
 | Limiting requests | limitware |
 | Logging ([logrus](https://github.com/Sirupsen/logrus)) | logware |
 | JWT authentication ([jwt-go](https://github.com/dgrijalva/jwt-go)) | tokenware |
@@ -34,20 +33,13 @@ go get github.com/nstogner/httpware
 Consider the following example where several middleware packages are composed together:
 ```go
 func main() {
-	// MustCompose chains together middleware. It will panic if middleware
-	// dependencies are not met.
-	m := httpware.MustCompose(
+	// Compose chains together middleware.
+	m := httpware.Compose(
 		contentware.New(contentware.Defaults),
-		errorware.New(errorware.Defaults),
 		logware.New(logware.Defaults),
 	)
 
 	http.ListenAndServe("localhost:8080", m.ThenFunc(handle))
-}
-
-type user struct {
-	ID    string `json:"id" xml:"id"`
-	Email string `json:"email" xml:"email"`
 }
 
 // handle is meant to demonstrate a POST or PUT endpoint.
@@ -59,11 +51,28 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		return httperr.New("could not parse body: "+err.Error(), http.StatusBadRequest)
 	}
 
-	// Store u in DB here... //
+	if err := u.validate(); err != nil {
+		return httperr.New("invalid entity", http.StatusBadRequest).WithField("invalid", err.Error())
+	}
+
+	// Store user to db here.
 
 	rst := contentware.ResponseTypeFromCtx(ctx)
-	// Encode to JSON or XML based on the 'Accept' header.
+	// Write the user back in the response as JSON or XML based on the
+	// 'Accept' header.
 	rst.Encode(w, u)
+	return nil
+}
+
+type user struct {
+	ID    string `json:"id" xml:"id"`
+	Email string `json:"email" xml:"email"`
+}
+
+func (u *user) validate() error {
+	if u.ID == "" {
+		return errors.New("field 'id' must not be empty")
+	}
 	return nil
 }
 ```
@@ -78,7 +87,7 @@ Middleware can be chained into composites:
 ```
 Composites can be further chained:
 ```go
-    m2 := httpware.MustCompose(m1, contentware.New(contentware.Defaults))
+    m2 := httpware.Compose(m1, contentware.New(contentware.Defaults))
 ```
 ... which is equivalent to:
 ```go
@@ -89,7 +98,7 @@ Composites can be further chained:
 Middleware can be adapted for use with different routers. For example, httprouter:
 ```go
 main() {
-    m := httpware.MustCompose(
+    m := httpware.Compose(
         errorware.New(errorware.Defaults),
         logware.New(logware.Defaults),
     )
@@ -102,37 +111,5 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
     ps := routeradapt.ParamsFromCtx(ctx)
     id := ps.ByName("id")
     ...
-}
-```
-#### CREATING MIDDLEWARE
-Any middleware that follows the httpware.Middleware interface can be composed using the above methods.
-```go
-type Middleware interface {
-    Contains() []string
-    Requires() []string
-    Handle(Handler) Handler
-}
-```
-The Contains() method is used to identify the middleware for dependency management. This should contain the fully qualified package name:
-```go
-[]string{"github.com/nstogner/contentware"}
-```
-The Requires() method is used to define what upstream middleware is relied on. This is enforced when the composition functions are called.
-#### USING NON-NATIVE MIDDLEWARE
-Non-native middleware (that which does not implement the httpware.Middleware interface) can be used in compositions if they adhere to the httpctx.Handler interface:
-```go
-func someMiddleware(next httpctx.Handler) httpctx.Handler {
-    return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-        ...
-        return next.ServeHTTPCtx(ctx, w, r)
-    })
-}
-
-func main() {
-    m := MustCompose(
-        ...,
-        // Bring someMiddleware in as an anonymous implementation of Middleware (no dependencies).
-        httpware.Anon(someMiddleware),
-    )
 }
 ```

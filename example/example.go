@@ -7,32 +7,25 @@ curl -v localhost:8080 -d '{"id":"bob", "email":"bob@email.com"}'
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"golang.org/x/net/context"
 
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/contentware"
-	"github.com/nstogner/httpware/errorware"
 	"github.com/nstogner/httpware/httperr"
 	"github.com/nstogner/httpware/logware"
 )
 
 func main() {
-	// MustCompose chains together middleware. It will panic if middleware
-	// dependencies are not met.
-	m := httpware.MustCompose(
+	// Compose chains together middleware.
+	m := httpware.Compose(
 		contentware.New(contentware.Defaults),
-		errorware.New(errorware.Defaults),
 		logware.New(logware.Defaults),
 	)
 
 	http.ListenAndServe("localhost:8080", m.ThenFunc(handle))
-}
-
-type user struct {
-	ID    string `json:"id" xml:"id"`
-	Email string `json:"email" xml:"email"`
 }
 
 // handle is meant to demonstrate a POST or PUT endpoint.
@@ -44,10 +37,27 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		return httperr.New("could not parse body: "+err.Error(), http.StatusBadRequest)
 	}
 
-	// Store u in DB here... //
+	if err := u.validate(); err != nil {
+		return httperr.New("invalid entity", http.StatusBadRequest).WithField("invalid", err.Error())
+	}
+
+	// Store user to db here.
 
 	rst := contentware.ResponseTypeFromCtx(ctx)
-	// Encode to JSON or XML based on the 'Accept' header.
+	// Write the user back in the response as JSON or XML based on the
+	// 'Accept' header.
 	rst.Encode(w, u)
+	return nil
+}
+
+type user struct {
+	ID    string `json:"id" xml:"id"`
+	Email string `json:"email" xml:"email"`
+}
+
+func (u *user) validate() error {
+	if u.ID == "" {
+		return errors.New("field 'id' must not be empty")
+	}
 	return nil
 }

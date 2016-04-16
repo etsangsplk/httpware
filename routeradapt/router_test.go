@@ -6,8 +6,16 @@ import (
 	"testing"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/nstogner/httpware"
 	"golang.org/x/net/context"
 )
+
+func ExampleAdapt() {
+	var hdlr = func(ctx context.Context, w http.ResponseWriter, r *http.Request) error { return nil }
+	m := httpware.Compose()
+	rtr := httprouter.New()
+	rtr.GET("/something", Adapt(m.ThenFunc(hdlr)))
+}
 
 func TestAdapt(t *testing.T) {
 	r := httprouter.New()

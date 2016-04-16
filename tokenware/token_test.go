@@ -7,15 +7,13 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/nstogner/httpware"
-	"github.com/nstogner/httpware/errorware"
 
 	"golang.org/x/net/context"
 )
 
 func TestWare(t *testing.T) {
 	secret := []byte("shh")
-	m := httpware.MustCompose(
-		errorware.New(errorware.Defaults),
+	m := httpware.Compose(
 		New(Config{secret}),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

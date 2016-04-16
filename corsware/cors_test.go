@@ -11,7 +11,7 @@ import (
 )
 
 func TestWare(t *testing.T) {
-	m := httpware.MustCompose(
+	m := httpware.Compose(
 		New(Defaults),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

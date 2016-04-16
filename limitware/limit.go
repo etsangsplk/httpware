@@ -66,13 +66,6 @@ func New(conf Config) *Middle {
 	return &middle
 }
 
-// Contains indentifies this middleware for compositions.
-func (m *Middle) Contains() []string { return []string{"github.com/nstogner/limitware"} }
-
-// Requires indentifies what this middleware depends on, in this case,
-// it requires github.com/nstogner/errorware.
-func (m *Middle) Requires() []string { return []string{"github.com/nstogner/errorware"} }
-
 // Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

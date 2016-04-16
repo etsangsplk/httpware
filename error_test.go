@@ -1,11 +1,10 @@
-package errorware
+package httpware
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/httpctx"
 	"github.com/nstogner/httpware/httperr"
 
@@ -13,9 +12,7 @@ import (
 )
 
 func TestHandle(t *testing.T) {
-	c := httpware.MustCompose(
-		New(Defaults),
-	)
+	c := Compose()
 	s := httptest.NewServer(
 		c.Then(
 			httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

@@ -16,7 +16,7 @@ func TestLog(t *testing.T) {
 	var buffer bytes.Buffer
 	conf := Defaults
 	conf.Logger.Out = &buffer
-	m := httpware.MustCompose(
+	m := httpware.Compose(
 		New(conf),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
