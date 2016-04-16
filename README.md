@@ -1,7 +1,7 @@
 # httpware
 
 #### DESCRIPTION
-This repository contains a collection of stackable middleware packages which aid in writing http handlers in Go. It also includes a set of functions (inspired by [alice](https://github.com/justinas/alice)) which make composing middleware as simple as possible. All handlers implement the following function:
+This repository contains a collection of middleware packages which aid in writing http handlers in Go. It also includes a set of functions (inspired by [alice](https://github.com/justinas/alice)) which make composing middleware as simple as possible. All handlers implement the following function:
 ```Go
 ServeHTTPCtx(context.Context, http.ResponseWriter, *http.Request) error
 ```
@@ -80,9 +80,9 @@ func (u *user) validate() error {
 #### COMPOSITIONS
 Middleware can be chained into composites:
 ```go
-    m1 := httpware.MustCompose(
-        errorware.New(errorware.Defaults),
+    m1 := httpware.Compose(
         logware.New(logware.Defaults),
+        limitware.New(limitware.Defaults),
     )
 ```
 Composites can be further chained:
@@ -98,10 +98,7 @@ Composites can be further chained:
 Middleware can be adapted for use with different routers. For example, httprouter:
 ```go
 main() {
-    m := httpware.Compose(
-        errorware.New(errorware.Defaults),
-        logware.New(logware.Defaults),
-    )
+    m := httpware.Compose(logware.New(logware.Defaults))
     r := httprouter.New()
     r.GET("/users/:id", routeradapt.Adapt(m.Then(handle))
     ...
