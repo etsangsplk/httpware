@@ -14,7 +14,6 @@ import (
 
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/contentware"
-	"github.com/nstogner/httpware/httperr"
 	"github.com/nstogner/httpware/logware"
 )
 
@@ -34,11 +33,11 @@ func handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	rqt := contentware.ResponseTypeFromCtx(ctx)
 	// Decode from JSON or XML based on the 'Content-Type' header.
 	if err := rqt.Decode(r.Body, u); err != nil {
-		return httperr.New("could not parse body: "+err.Error(), http.StatusBadRequest)
+		return httpware.NewErr("could not parse body: "+err.Error(), http.StatusBadRequest)
 	}
 
 	if err := u.validate(); err != nil {
-		return httperr.New("invalid entity", http.StatusBadRequest).WithField("invalid", err.Error())
+		return httpware.NewErr("invalid entity", http.StatusBadRequest).WithField("invalid", err.Error())
 	}
 
 	// Store user to db here.

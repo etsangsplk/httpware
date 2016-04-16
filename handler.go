@@ -1,8 +1,8 @@
 /*
-Package httpctx defines a http handler interface that allows for data-sharing
+Package httpware defines a http handler interface that allows for data-sharing
 through the use of net/context.
 */
-package httpctx
+package httpware
 
 import (
 	"net/http"

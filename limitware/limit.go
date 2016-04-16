@@ -12,8 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nstogner/httpware/httpctx"
-	"github.com/nstogner/httpware/httperr"
+	"github.com/nstogner/httpware"
 	"golang.org/x/net/context"
 )
 
@@ -67,8 +66,8 @@ func New(conf Config) *Middle {
 }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.
-func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		remote := strings.Split(r.RemoteAddr, ":")
 		if len(remote) != 2 {
 			return next.ServeHTTPCtx(ctx, w, r)
@@ -81,7 +80,7 @@ func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
 
 		// Send a 429 response (Too Many Requests).
 		m.retryHeader(w)
-		return httperr.New("exceeded request rate limit", 429)
+		return httpware.NewErr("exceeded request rate limit", 429)
 	})
 }
 

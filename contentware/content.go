@@ -11,7 +11,6 @@ import (
 	"net/http"
 
 	"github.com/nstogner/httpware"
-	"github.com/nstogner/httpware/httpctx"
 
 	"golang.org/x/net/context"
 )
@@ -116,8 +115,8 @@ func New(conf Config) *Middle {
 }
 
 // Handle takes the next handler as an argument and wraps it in this middleware.
-func (m *Middle) Handle(next httpctx.Handler) httpctx.Handler {
-	return httpctx.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
+	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		ctx = context.WithValue(ctx, httpware.RequestContentTypeKey, GetContentMatch(r.Header.Get("Content-Type")))
 		ct := GetContentMatch(r.Header.Get("Accept"))
 		ctx = context.WithValue(ctx, httpware.ResponseContentTypeKey, ct)

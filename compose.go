@@ -3,15 +3,13 @@ package httpware
 import (
 	"net/http"
 
-	"github.com/nstogner/httpware/httpctx"
-
 	"golang.org/x/net/context"
 )
 
 // The Middleware interface serves as the building block for composing
 // http middleware.
 type Middleware interface {
-	Handle(httpctx.Handler) httpctx.Handler
+	Handle(Handler) Handler
 }
 
 // Composite is a collection of Middleware instances.
@@ -29,7 +27,7 @@ func Compose(mdlw ...Middleware) *Composite {
 
 // Handle takes the next handler as an argument and wraps it in each instance
 // of Middleware contained in the Composite.
-func (c *Composite) Handle(h httpctx.Handler) httpctx.Handler {
+func (c *Composite) Handle(h Handler) Handler {
 	for i := len(c.middle) - 1; i >= 0; i-- {
 		h = c.middle[i].Handle(h)
 	}
@@ -49,20 +47,20 @@ func (c *Composite) With(mdlw ...Middleware) *Composite {
 
 // Then is used to call the final handler than will terminate the chain of
 // middleware.
-func (c *Composite) Then(hf httpctx.Handler) CompositeHandler {
+func (c *Composite) Then(hf Handler) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
 
 // ThenFunc is a convenience method which calls the Then method.
-func (c *Composite) ThenFunc(hf httpctx.HandlerFunc) CompositeHandler {
+func (c *Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
 	return c.Handle(hf).(CompositeHandler)
 }
 
 // CompositeHandler implements the http.Handler interface, allowing it to be
 // used by functions such as http.ListenAndServe. It also implements the
-// httpctx.Handler interface.
+// Handler interface.
 type CompositeHandler struct {
-	h httpctx.Handler
+	h Handler
 }
 
 // ServeHTTP fulfills the http.Handler interface.
@@ -70,7 +68,7 @@ func (ch CompositeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ch.h.ServeHTTPCtx(context.Background(), w, r)
 }
 
-// ServeHTTPCtx fulfills the httpctx.Handler interface.
+// ServeHTTPCtx fulfills the Handler interface.
 func (ch CompositeHandler) ServeHTTPCtx(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return ch.h.ServeHTTPCtx(ctx, w, r)
 }

@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/nstogner/httpware"
-	"github.com/nstogner/httpware/httperr"
 	"golang.org/x/net/context"
 )
 
@@ -21,10 +20,10 @@ func TestLog(t *testing.T) {
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		if r.URL.Path == "/400" {
-			return httperr.New("didnt like your request", http.StatusBadRequest)
+			return httpware.NewErr("didnt like your request", http.StatusBadRequest)
 		}
 		if r.URL.Path == "/500" {
-			return httperr.New("ahhhh it blew up", http.StatusInternalServerError)
+			return httpware.NewErr("ahhhh it blew up", http.StatusInternalServerError)
 		}
 		return nil
 	}))
