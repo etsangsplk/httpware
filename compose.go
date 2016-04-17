@@ -32,8 +32,7 @@ func (c *Composite) Handle(h Handler) Handler {
 		h = c.middle[i].Handle(h)
 	}
 	return CompositeHandler{
-		// Wrap with error-handling middleware.
-		h: handleHTTPErrors(h),
+		h: h,
 	}
 }
 
@@ -47,13 +46,13 @@ func (c *Composite) With(mdlw ...Middleware) *Composite {
 
 // Then is used to call the final handler than will terminate the chain of
 // middleware.
-func (c *Composite) Then(hf Handler) CompositeHandler {
-	return c.Handle(hf).(CompositeHandler)
+func (c *Composite) Then(h Handler) CompositeHandler {
+	return CompositeHandler{handleHTTPErrors(c.Handle(h))}
 }
 
 // ThenFunc is a convenience method which calls the Then method.
 func (c *Composite) ThenFunc(hf HandlerFunc) CompositeHandler {
-	return c.Handle(hf).(CompositeHandler)
+	return c.Then(hf)
 }
 
 // CompositeHandler implements the http.Handler interface, allowing it to be
