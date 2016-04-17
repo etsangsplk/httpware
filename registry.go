@@ -7,4 +7,5 @@ const (
 	EntityKey
 	RequestContentTypeKey
 	ResponseContentTypeKey
+	PageKey
 )

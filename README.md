@@ -18,6 +18,7 @@ This type of http handler was inspired by several Go blog posts: [net/context](h
 | Limiting requests | limitware |
 | Logging ([logrus](https://github.com/Sirupsen/logrus)) | logware |
 | JWT authentication ([jwt-go](https://github.com/dgrijalva/jwt-go)) | tokenware |
+| Pagination | pageware |
 
 #### ROUTER (ADAPTOR) PACKAGES
 | Functionality | Package |
