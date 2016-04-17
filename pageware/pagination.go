@@ -73,10 +73,10 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 		} else {
 			page.Start, err = strconv.Atoi(s)
 			if err != nil {
-				return httpware.NewErr("param 'start' must be an integer", http.StatusBadRequest)
+				return httpware.NewErr("invalid query parameter", http.StatusBadRequest).WithField(m.startQuery, "must be an integer")
 			}
 			if page.Start < 0 {
-				return httpware.NewErr("param 'start' must not be negative", http.StatusBadRequest)
+				return httpware.NewErr("invalid query parameter", http.StatusBadRequest).WithField(m.startQuery, "must not be negative")
 			}
 		}
 		if l == "" {
