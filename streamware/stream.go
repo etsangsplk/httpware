@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	// Defaults is a reasonable configuration.
+	// Defaults is a placeholder for now.
 	Defaults = Config{}
 )
 
@@ -20,7 +20,7 @@ var (
 type Config struct {
 }
 
-// Middle is middleware that limits http requests.
+// Middle is middleware that enables Server Sent Events.
 type Middle struct {
 }
 
@@ -32,8 +32,9 @@ func New(conf Config) *Middle {
 
 // Sender is used to send events to the client.
 type Sender struct {
-	flusher     http.Flusher
-	writer      http.ResponseWriter
+	flusher http.Flusher
+	writer  http.ResponseWriter
+	// CloseNotify blocks until the client disconnects.
 	CloseNotify <-chan bool
 }
 
