@@ -17,6 +17,7 @@ This type of http handler was inspired by several Go blog posts: [net/context](h
 | Enabling CORS | corsware |
 | Limiting requests | limitware |
 | Logging ([logrus](https://github.com/Sirupsen/logrus)) | logware |
+| Server Sent Events | streamware |
 | JWT authentication ([jwt-go](https://github.com/dgrijalva/jwt-go)) | tokenware |
 | Pagination | pageware |
 

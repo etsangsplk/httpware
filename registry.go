@@ -8,4 +8,5 @@ const (
 	RequestContentTypeKey
 	ResponseContentTypeKey
 	PageKey
+	SenderKey
 )
