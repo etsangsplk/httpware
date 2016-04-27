@@ -22,7 +22,6 @@ func TestStreaming(t *testing.T) {
 				t.Fatal("error sending message: ", err)
 			}
 		}
-		return nil
 	}))
 
 	resp, err := http.Get(s.URL)

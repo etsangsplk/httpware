@@ -43,10 +43,10 @@ func TestPagination(t *testing.T) {
 	// Invalid test cases:
 	r, _ := http.Get(s.URL + "?start=-10&limit=5")
 	if r.StatusCode != http.StatusBadRequest {
-		t.Fatal("expected status code %v, got: %v, while testing negative start param", http.StatusBadRequest, r.StatusCode)
+		t.Fatalf("expected status code %v, got: %v, while testing negative start param", http.StatusBadRequest, r.StatusCode)
 	}
 	r, _ = http.Get(s.URL + "?start=10&limit=0")
 	if r.StatusCode != http.StatusBadRequest {
-		t.Fatal("expected status code %v, got: %v, while testing zero limit param", http.StatusBadRequest, r.StatusCode)
+		t.Fatalf("expected status code %v, got: %v, while testing zero limit param", http.StatusBadRequest, r.StatusCode)
 	}
 }
