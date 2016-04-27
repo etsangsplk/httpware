@@ -17,6 +17,7 @@ func TestRemoteLimit(t *testing.T) {
 		TotalLimit:  10,
 	}
 	m := httpware.Compose(
+		httpware.DefaultErrHandler,
 		New(conf),
 	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -58,7 +59,10 @@ func TestTotalLimit(t *testing.T) {
 		TotalLimit:  10,
 	}
 	mid := New(conf)
-	c0 := httpware.Compose(mid)
+	c0 := httpware.Compose(
+		httpware.DefaultErrHandler,
+		mid,
+	)
 	c1 := c0.With(testWare{})
 
 	// Start test servers.
@@ -105,7 +109,10 @@ func TestCompositeLimit(t *testing.T) {
 		TotalLimit:  10,
 	}
 	mid := New(conf)
-	c0 := httpware.Compose(mid)
+	c0 := httpware.Compose(
+		httpware.DefaultErrHandler,
+		mid,
+	)
 	c1 := c0.With(testWare{})
 
 	// Start test servers.

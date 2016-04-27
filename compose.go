@@ -12,16 +12,24 @@ type Middleware interface {
 	Handle(Handler) Handler
 }
 
+// The Errware interface serves as a check point for the non-nil
+// error return values from downstream middleware.
+type Errware interface {
+	HandleErr(Handler) Handler
+}
+
 // Composite is a collection of Middleware instances.
 type Composite struct {
-	middle []Middleware
+	errWare Errware
+	middle  []Middleware
 }
 
 // Compose takes multiple Middleware instances and returns a Composite
 // instance.
-func Compose(mdlw ...Middleware) *Composite {
+func Compose(errWare Errware, mdlw ...Middleware) *Composite {
 	return &Composite{
-		middle: append(([]Middleware)(nil), mdlw...),
+		errWare: errWare,
+		middle:  append(([]Middleware)(nil), mdlw...),
 	}
 }
 
@@ -41,13 +49,13 @@ func (c *Composite) Handle(h Handler) Handler {
 func (c *Composite) With(mdlw ...Middleware) *Composite {
 	m := make([]Middleware, 1)
 	m[0] = Middleware(c)
-	return Compose(append(m, mdlw...)...)
+	return Compose(c.errWare, append(m, mdlw...)...)
 }
 
 // Then is used to call the final handler than will terminate the chain of
 // middleware.
 func (c *Composite) Then(h Handler) CompositeHandler {
-	return CompositeHandler{handleHTTPErrors(c.Handle(h))}
+	return CompositeHandler{c.errWare.HandleErr(c.Handle(h))}
 }
 
 // ThenFunc is a convenience method which calls the Then method.

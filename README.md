@@ -36,6 +36,7 @@ Consider the following example where several middleware packages are composed to
 func main() {
 	// Compose chains together middleware.
 	m := httpware.Compose(
+    httpware.DefaultErrorHandler,
 		contentware.New(contentware.Defaults),
 		logware.New(logware.Defaults),
 	)

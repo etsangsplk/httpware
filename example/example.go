@@ -20,6 +20,7 @@ import (
 func main() {
 	// Compose chains together middleware.
 	m := httpware.Compose(
+		httpware.DefaultErrHandler,
 		contentware.New(contentware.Defaults),
 		logware.New(logware.Defaults),
 	)

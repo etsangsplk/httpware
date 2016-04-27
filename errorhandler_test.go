@@ -9,7 +9,7 @@ import (
 )
 
 func TestHandle(t *testing.T) {
-	c := Compose()
+	c := Compose(DefaultErrHandler)
 	s := httptest.NewServer(
 		c.Then(
 			HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

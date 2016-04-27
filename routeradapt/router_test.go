@@ -12,7 +12,7 @@ import (
 
 func ExampleAdapt() {
 	var hdlr = func(ctx context.Context, w http.ResponseWriter, r *http.Request) error { return nil }
-	m := httpware.Compose()
+	m := httpware.Compose(httpware.DefaultErrHandler)
 	rtr := httprouter.New()
 	rtr.GET("/something", Adapt(m.ThenFunc(hdlr)))
 }

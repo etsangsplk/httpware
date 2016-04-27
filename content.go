@@ -5,7 +5,9 @@ import "strings"
 var contentTypeStrings = []string{"json", "xml"}
 
 const (
+	// JSON Content-Type
 	JSON = iota
+	// XML Content-Type
 	XML
 )
 

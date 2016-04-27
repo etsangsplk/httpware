@@ -10,7 +10,10 @@ import (
 )
 
 func TestPagination(t *testing.T) {
-	m := httpware.Compose(New(Defaults))
+	m := httpware.Compose(
+		httpware.DefaultErrHandler,
+		New(Defaults),
+	)
 	s := httptest.NewServer(m.ThenFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		page := PageFromCtx(ctx)
 		switch r.URL.RawQuery {

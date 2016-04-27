@@ -44,6 +44,7 @@ func testAdapt(h Handler) http.Handler {
 
 func TestCompose(t *testing.T) {
 	c := Compose(
+		DefaultErrHandler,
 		newTM1(),
 		newTM2(),
 	)

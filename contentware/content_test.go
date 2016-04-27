@@ -17,6 +17,7 @@ type user struct {
 
 func TestRequest(t *testing.T) {
 	c := httpware.Compose(
+		httpware.DefaultErrHandler,
 		New(Defaults),
 	)
 	s := httptest.NewServer(
@@ -66,6 +67,7 @@ func TestRequest(t *testing.T) {
 
 func TestResponse(t *testing.T) {
 	c := httpware.Compose(
+		httpware.DefaultErrHandler,
 		New(Defaults),
 	)
 	s := httptest.NewServer(
