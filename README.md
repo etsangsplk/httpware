@@ -83,15 +83,12 @@ func (u *User) validate() error {
 Middleware can be chained into composites:
 ```go
     m1 := httpware.Compose(
+        httpware.DefaultErrHandler,
         logware.New(logware.Defaults),
         limitware.New(limitware.Defaults),
     )
 ```
 Composites can be further chained:
-```go
-    m2 := httpware.Compose(m1, contentware.New(contentware.Defaults))
-```
-... which is equivalent to:
 ```go
     m2 := m1.With(contentware.New(contentware.Defaults))
 ```
@@ -100,7 +97,10 @@ Composites can be further chained:
 Middleware can be adapted for use with different routers. For example, httprouter:
 ```go
 main() {
-    m := httpware.Compose(logware.New(logware.Defaults))
+    m := httpware.Compose(
+        httpware.DefaultErrHandler,
+        logware.New(logware.Defaults),
+    )
     r := httprouter.New()
     r.GET("/users/:id", routeradapt.Adapt(m.Then(handle))
     ...
