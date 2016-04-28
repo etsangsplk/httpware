@@ -26,6 +26,9 @@ func TestLog(t *testing.T) {
 		if r.URL.Path == "/500" {
 			return httpware.NewErr("ahhhh it blew up", http.StatusInternalServerError)
 		}
+		if r.URL.Path == "/panic" {
+			panic("PANIC!")
+		}
 		return nil
 	}))
 
@@ -44,6 +47,10 @@ func TestLog(t *testing.T) {
 		{
 			Path:     "/500",
 			Expected: "ahhhh it blew up",
+		},
+		{
+			Path:     "/panic",
+			Expected: "PANIC!",
 		},
 	}
 	for _, c := range cases {

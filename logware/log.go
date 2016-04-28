@@ -21,6 +21,7 @@ var (
 		RemoteAddr: false,
 		Successes:  true,
 		Failures:   true,
+		Panics:     true,
 	}
 )
 
@@ -34,6 +35,7 @@ type Config struct {
 	Successes bool
 	// Should 500+ http responses be logged?
 	Failures bool
+	Panics   bool
 }
 
 // Middle logs http responses and any errors returned by the downstream
@@ -50,6 +52,17 @@ func New(conf Config) *Middle {
 // Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		// Should panics be logged?
+		if m.conf.Panics {
+			defer func() {
+				if rcv := recover(); rcv != nil {
+					m.conf.Logger.WithField("error", rcv).Error("handler panic detected")
+					// Pass on the panic.
+					panic(rcv)
+				}
+			}()
+		}
+
 		// Call downstream handlers.
 		err := next.ServeHTTPCtx(ctx, w, r)
 

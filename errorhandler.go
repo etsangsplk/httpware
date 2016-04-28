@@ -12,6 +12,7 @@ var (
 	// DefaultErrHandlerConfig is a reasonable configuration.
 	DefaultErrHandlerConfig = ErrHandlerConfig{
 		Suppress500Messages: false,
+		CatchPanics:         true,
 	}
 	// DefaultErrHandler uses DefaultErrHandlerConfig.
 	DefaultErrHandler = NewErrHandler(DefaultErrHandlerConfig)
@@ -23,6 +24,7 @@ type ErrHandlerConfig struct {
 	// clients and shows a predefined message.
 	// To allow >500 code responses to contain errors, set this to false.
 	Suppress500Messages bool
+	CatchPanics         bool
 }
 
 // ErrHandler is an implementation of Errware. It handles any errors that are
@@ -44,6 +46,14 @@ func NewErrHandler(conf ErrHandlerConfig) *ErrHandler {
 // HandleErr handles non-nil error return values by upstream middleware.
 func (h *ErrHandler) HandleErr(next Handler) Handler {
 	return HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		if h.conf.CatchPanics {
+			defer func() {
+				if rcv := recover(); rcv != nil {
+					writeErr(w, NewErr(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+				}
+			}()
+		}
+
 		err := next.ServeHTTPCtx(ctx, w, r)
 		if err != nil {
 			w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -51,7 +61,6 @@ func (h *ErrHandler) HandleErr(next Handler) Handler {
 			respErr := Err{}
 
 			if e, ok := err.(Err); ok {
-				w.WriteHeader(e.StatusCode)
 				respErr.StatusCode = e.StatusCode
 				respErr.Fields = e.Fields
 				if e.StatusCode >= 500 {
@@ -65,7 +74,6 @@ func (h *ErrHandler) HandleErr(next Handler) Handler {
 					respErr.Message = e.Message
 				}
 			} else {
-				w.WriteHeader(http.StatusInternalServerError)
 				respErr.StatusCode = http.StatusInternalServerError
 				if h.conf.Suppress500Messages {
 					respErr.Message = http.StatusText(http.StatusInternalServerError)
@@ -73,14 +81,19 @@ func (h *ErrHandler) HandleErr(next Handler) Handler {
 					respErr.Message = err.Error()
 				}
 			}
-
-			switch ContentTypeFromHeader(w.Header().Get("Accept")) {
-			case JSON:
-				json.NewEncoder(w).Encode(respErr)
-			case XML:
-				xml.NewEncoder(w).Encode(respErr)
-			}
+			writeErr(w, respErr)
 		}
 		return err
 	})
+}
+
+// writeErr writes a reponses code and populates the body.
+func writeErr(w http.ResponseWriter, err Err) {
+	w.WriteHeader(err.StatusCode)
+	switch ContentTypeFromHeader(w.Header().Get("Accept")) {
+	case JSON:
+		json.NewEncoder(w).Encode(err)
+	case XML:
+		xml.NewEncoder(w).Encode(err)
+	}
 }
