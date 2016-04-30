@@ -15,27 +15,18 @@ import (
 var (
 	// Defaults is a reasonable configuration that should work for most cases.
 	Defaults = Config{
-		Logger:     logrus.New(),
-		Headers:    []string{},
-		Referer:    false,
-		RemoteAddr: false,
-		Successes:  true,
-		Failures:   true,
-		Panics:     true,
+		Logger: logrus.New(),
 	}
 )
 
 // Config is used to initialize a new instance of this middleware.
 type Config struct {
-	Logger     *logrus.Logger
-	Headers    []string
-	Referer    bool
-	RemoteAddr bool
-	// Should <500 http responses be logged?
-	Successes bool
-	// Should 500+ http responses be logged?
-	Failures bool
-	Panics   bool
+	Logger         *logrus.Logger
+	Headers        []string
+	Referer        bool
+	RemoteAddr     bool
+	IgnoreUnder400 bool
+	Ignore4XX      bool
 }
 
 // Middle logs http responses and any errors returned by the downstream
@@ -52,16 +43,14 @@ func New(conf Config) *Middle {
 // Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		// Should panics be logged?
-		if m.conf.Panics {
-			defer func() {
-				if rcv := recover(); rcv != nil {
-					m.conf.Logger.WithField("error", rcv).Error("handler panic detected")
-					// Pass on the panic.
-					panic(rcv)
-				}
-			}()
-		}
+		// Log panics.
+		defer func() {
+			if rcv := recover(); rcv != nil {
+				m.conf.Logger.WithField("error", rcv).Error("handler panic detected")
+				// Pass on the panic.
+				panic(rcv)
+			}
+		}()
 
 		// Call downstream handlers.
 		err := next.ServeHTTPCtx(ctx, w, r)
@@ -74,7 +63,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 
 		// Conditional logging...
 		if m.conf.Referer {
-			entry = entry.WithField("referer", r.Referer())
+			entry = entry.WithField("referrer", r.Referer())
 		}
 		if m.conf.RemoteAddr {
 			entry = entry.WithField("remoteAddr", r.RemoteAddr)
@@ -84,7 +73,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 		}
 
 		// Add any errors to the log entry.
-		logAsError := false
+		statusCode := 0
 		if err != nil {
 			if httpErr, ok := err.(httpware.Err); ok {
 				entry = entry.WithFields(logrus.Fields{
@@ -92,9 +81,7 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 					"message":    httpErr.Message,
 				})
 				entry = entry.WithFields(httpErr.Fields)
-				if httpErr.StatusCode >= 500 {
-					logAsError = true
-				}
+				statusCode = httpErr.StatusCode
 			} else {
 				entry = entry.WithField("error",
 					map[string]interface{}{
@@ -102,18 +89,20 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 						"message":    err,
 					},
 				)
-				logAsError = true
+				statusCode = http.StatusInternalServerError
 			}
 		}
 
 		// Log with the right level and pass on the error.
-		if logAsError {
-			if m.conf.Failures {
-				entry.Error("failed to serve request")
-			}
+		if statusCode >= 500 {
+			entry.Error("server error")
 		} else {
-			if m.conf.Successes {
-				entry.Info("served request")
+			if statusCode >= 400 {
+				if !m.conf.Ignore4XX {
+					entry.Info("client error")
+				}
+			} else if !m.conf.IgnoreUnder400 {
+				entry.Info("successful request")
 			}
 		}
 		return err

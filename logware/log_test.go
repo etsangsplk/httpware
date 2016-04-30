@@ -2,6 +2,7 @@ package logware
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -38,7 +39,7 @@ func TestLog(t *testing.T) {
 	}{
 		{
 			Path:     "/",
-			Expected: "served request",
+			Expected: "success",
 		},
 		{
 			Path:     "/400",
@@ -54,8 +55,13 @@ func TestLog(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		http.Get(s.URL + c.Path)
+		resp, err := http.Get(s.URL + c.Path)
+		if err != nil {
+			t.Fatal("failed to make request:", err)
+		}
+		resp.Body.Close()
 		got := buffer.String()
+		fmt.Println(got, "=======\n")
 		if !strings.Contains(got, c.Expected) {
 			t.Fatalf("expected log output to contain: '%s', got: \n%s", c.Expected, got)
 		}
