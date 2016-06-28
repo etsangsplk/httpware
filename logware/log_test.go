@@ -2,7 +2,6 @@ package logware
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -61,7 +60,6 @@ func TestLog(t *testing.T) {
 		}
 		resp.Body.Close()
 		got := buffer.String()
-		fmt.Println(got, "=======\n")
 		if !strings.Contains(got, c.Expected) {
 			t.Fatalf("expected log output to contain: '%s', got: \n%s", c.Expected, got)
 		}

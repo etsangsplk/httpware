@@ -16,6 +16,8 @@ var (
 	// Defaults is a reasonable configuration that should work for most cases.
 	Defaults = Config{
 		Logger: logrus.New(),
+		Start:  true,
+		End:    true,
 	}
 )
 
@@ -27,6 +29,10 @@ type Config struct {
 	RemoteAddr     bool
 	IgnoreUnder400 bool
 	Ignore4XX      bool
+	// Log when the request comes in.
+	Start bool
+	// Log at the end of the request.
+	End bool
 }
 
 // Middle logs http responses and any errors returned by the downstream
@@ -52,9 +58,6 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 			}
 		}()
 
-		// Call downstream handlers.
-		err := next.ServeHTTPCtx(ctx, w, r)
-
 		// Always log the method and path.
 		entry := m.conf.Logger.WithFields(logrus.Fields{
 			"method": r.Method,
@@ -72,37 +75,46 @@ func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 			entry = entry.WithField(h, r.Header.Get(h))
 		}
 
-		// Add any errors to the log entry.
-		statusCode := 0
-		if err != nil {
-			if httpErr, ok := err.(httpware.Err); ok {
-				entry = entry.WithFields(logrus.Fields{
-					"statusCode": httpErr.StatusCode,
-					"message":    httpErr.Message,
-				})
-				entry = entry.WithFields(httpErr.Fields)
-				statusCode = httpErr.StatusCode
-			} else {
-				entry = entry.WithField("error",
-					map[string]interface{}{
-						"statusCode": http.StatusInternalServerError,
-						"message":    err,
-					},
-				)
-				statusCode = http.StatusInternalServerError
-			}
+		if m.conf.Start {
+			entry.Info("new request")
 		}
 
-		// Log with the right level and pass on the error.
-		if statusCode >= 500 {
-			entry.Error("server error")
-		} else {
-			if statusCode >= 400 {
-				if !m.conf.Ignore4XX {
-					entry.Info("client error")
+		// Call downstream handlers.
+		err := next.ServeHTTPCtx(ctx, w, r)
+
+		if m.conf.End {
+			// Add any errors to the log entry.
+			statusCode := 0
+			if err != nil {
+				if httpErr, ok := err.(httpware.Err); ok {
+					entry = entry.WithFields(logrus.Fields{
+						"statusCode": httpErr.StatusCode,
+						"message":    httpErr.Message,
+					})
+					entry = entry.WithFields(httpErr.Fields)
+					statusCode = httpErr.StatusCode
+				} else {
+					entry = entry.WithField("error",
+						map[string]interface{}{
+							"statusCode": http.StatusInternalServerError,
+							"message":    err,
+						},
+					)
+					statusCode = http.StatusInternalServerError
 				}
-			} else if !m.conf.IgnoreUnder400 {
-				entry.Info("successful request")
+			}
+
+			// Log with the right level and pass on the error.
+			if statusCode >= 500 {
+				entry.Error("request resulted in server error")
+			} else {
+				if statusCode >= 400 {
+					if !m.conf.Ignore4XX {
+						entry.Info("request resulted in client error")
+					}
+				} else if !m.conf.IgnoreUnder400 {
+					entry.Info("request successful")
+				}
 			}
 		}
 		return err
