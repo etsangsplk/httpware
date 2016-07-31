@@ -102,7 +102,7 @@ main() {
         logware.New(logware.Defaults),
     )
     r := httprouter.New()
-    r.GET("/users/:id", routeradapt.Adapt(m.Then(handle))
+    r.GET("/users/:id", routeradapt.Adapt(m.ThenFunc(handle))
     ...
 }
 
