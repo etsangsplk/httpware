@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 func TestWare(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 	"github.com/julienschmidt/httprouter"
 )
 

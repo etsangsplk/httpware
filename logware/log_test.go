@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 func TestLog(t *testing.T) {

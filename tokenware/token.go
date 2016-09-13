@@ -11,7 +11,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 // Config is used to initialize a new instance of this middleware.

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 var (

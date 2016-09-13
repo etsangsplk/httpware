@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 var (

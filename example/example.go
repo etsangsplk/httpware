@@ -11,9 +11,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/jriquelme/httpware"
-	"github.com/jriquelme/httpware/contentware"
-	"github.com/jriquelme/httpware/logware"
+	"github.com/nstogner/httpware"
+	"github.com/nstogner/httpware/contentware"
+	"github.com/nstogner/httpware/logware"
 )
 
 func main() {

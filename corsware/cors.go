@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 var (

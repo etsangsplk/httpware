@@ -11,7 +11,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 var (

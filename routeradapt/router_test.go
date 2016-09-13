@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 	"github.com/julienschmidt/httprouter"
 )
 

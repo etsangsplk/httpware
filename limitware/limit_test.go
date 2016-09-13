@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jriquelme/httpware"
+	"github.com/nstogner/httpware"
 )
 
 func TestRemoteLimit(t *testing.T) {
