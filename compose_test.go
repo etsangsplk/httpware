@@ -1,11 +1,10 @@
 package httpware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"golang.org/x/net/context"
 )
 
 type testMiddle1 struct {

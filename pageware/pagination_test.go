@@ -1,12 +1,12 @@
 package pageware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
+	"github.com/jriquelme/httpware"
 )
 
 func TestPagination(t *testing.T) {

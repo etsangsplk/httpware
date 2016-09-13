@@ -6,11 +6,11 @@ variables.
 package pageware
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
-	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
+	"github.com/jriquelme/httpware"
 )
 
 var (

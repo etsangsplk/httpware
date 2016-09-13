@@ -6,14 +6,14 @@ interface for easy composition with other middleware.
 package limitware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
+	"github.com/jriquelme/httpware"
 )
 
 var (

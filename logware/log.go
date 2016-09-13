@@ -5,11 +5,11 @@ is based on the httpware.Middleware interface.
 package logware
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
+	"github.com/jriquelme/httpware"
 )
 
 var (

@@ -1,9 +1,8 @@
 package httpware
 
 import (
+	"context"
 	"net/http"
-
-	"golang.org/x/net/context"
 )
 
 // The Middleware interface serves as the building block for composing

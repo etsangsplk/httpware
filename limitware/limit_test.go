@@ -1,14 +1,13 @@
 package limitware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/nstogner/httpware"
-
-	"golang.org/x/net/context"
+	"github.com/jriquelme/httpware"
 )
 
 func TestRemoteLimit(t *testing.T) {

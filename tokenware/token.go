@@ -6,11 +6,11 @@ easy composition with other middleware.
 package tokenware
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
+	"github.com/jriquelme/httpware"
 )
 
 // Config is used to initialize a new instance of this middleware.

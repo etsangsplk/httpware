@@ -1,13 +1,13 @@
 package routeradapt
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/jriquelme/httpware"
 	"github.com/julienschmidt/httprouter"
-	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
 )
 
 func ExampleAdapt() {
