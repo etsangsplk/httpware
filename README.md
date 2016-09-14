@@ -7,8 +7,7 @@ ServeHTTPCtx(context.Context, http.ResponseWriter, *http.Request) error
 ```
 This type of http handler was inspired by several Go blog posts: [net/context](https://blog.golang.org/context) and [error-handling](https://blog.golang.org/error-handling-and-go).
 
-**NOTE: Currently under development.**
-**Stay tuned for a stable release.**
+**Requires: Go 1.7**
 
 #### MIDDLEWARE PACKAGES
 | Functionality | Package |
