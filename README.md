@@ -1,5 +1,10 @@
 # httpware
 
+#### UPDATE
+This project was started before net/context was integrated into the standard library and made a first class citizen in go 1.7. The standard library now includes the context as a part of the http.Request struct, making the first parameter to the ServeHTTPCtx function this repo uses unnecessary. The repo should be refactored to grab the request context from the Request struct. This leaves the question of whether or not to leave the error return value in the middleware signature (it breaks compatibility with http.Handler, but it is nice b/c it avoids the pitfall of forgetting early returns).
+
+[Read: context has arrived...](https://medium.com/@matryer/context-has-arrived-per-request-state-in-go-1-7-4d095be83bd8)
+
 #### DESCRIPTION
 This repository contains a collection of middleware packages which aid in writing http handlers in Go. It also includes a set of functions (inspired by [alice](https://github.com/justinas/alice)) which make composing middleware as simple as possible. All handlers implement the following function:
 ```Go
