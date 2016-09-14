@@ -5,11 +5,11 @@ httpware.Handler implementations with the httprouter package.
 package routeradapt
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
+	"github.com/julienschmidt/httprouter"
 )
 
 // Adapt calls the AdaptFunc function.

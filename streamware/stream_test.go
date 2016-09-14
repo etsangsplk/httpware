@@ -2,12 +2,12 @@ package streamware
 
 import (
 	"bufio"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
 )
 
 func TestStreaming(t *testing.T) {

@@ -1,13 +1,12 @@
 package contentware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/nstogner/httpware"
-
-	"golang.org/x/net/context"
 )
 
 type user struct {

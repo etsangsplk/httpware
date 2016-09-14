@@ -7,10 +7,9 @@ curl -v localhost:8080 -d '{"id":"bob", "email":"bob@email.com"}'
 package main
 
 import (
+	"context"
 	"errors"
 	"net/http"
-
-	"golang.org/x/net/context"
 
 	"github.com/nstogner/httpware"
 	"github.com/nstogner/httpware/contentware"

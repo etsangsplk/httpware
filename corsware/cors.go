@@ -6,13 +6,12 @@ easy composition with other middleware.
 package corsware
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/nstogner/httpware"
-
-	"golang.org/x/net/context"
 )
 
 var (

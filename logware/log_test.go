@@ -2,13 +2,13 @@ package logware
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
 )
 
 func TestLog(t *testing.T) {

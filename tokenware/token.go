@@ -6,11 +6,12 @@ easy composition with other middleware.
 package tokenware
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/request"
 	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
 )
 
 // Config is used to initialize a new instance of this middleware.
@@ -42,8 +43,9 @@ func New(conf Config) *Middle {
 // Handle takes the next handler as an argument and wraps it in this middleware.
 func (m *Middle) Handle(next httpware.Handler) httpware.Handler {
 	return httpware.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		token, err := jwt.ParseFromRequest(
+		token, err := request.ParseFromRequest(
 			r,
+			request.AuthorizationHeaderExtractor,
 			func(token *jwt.Token) (interface{}, error) {
 				return m.conf.Secret, nil
 			},

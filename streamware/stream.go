@@ -4,11 +4,11 @@ Package streamware provides middleware for Server Sent Events (SSE).
 package streamware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/nstogner/httpware"
-	"golang.org/x/net/context"
 )
 
 var (

@@ -5,14 +5,13 @@ requests (using the 'Accept' & 'Content-Type' headers).
 package contentware
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"io"
 	"net/http"
 
 	"github.com/nstogner/httpware"
-
-	"golang.org/x/net/context"
 )
 
 var (

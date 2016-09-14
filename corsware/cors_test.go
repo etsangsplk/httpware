@@ -1,13 +1,12 @@
 package corsware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/nstogner/httpware"
-
-	"golang.org/x/net/context"
 )
 
 func TestWare(t *testing.T) {

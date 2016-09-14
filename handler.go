@@ -5,9 +5,8 @@ through the use of net/context.
 package httpware
 
 import (
+	"context"
 	"net/http"
-
-	"golang.org/x/net/context"
 )
 
 // The Handler interface is intended to be an improvement on the http.Handler
